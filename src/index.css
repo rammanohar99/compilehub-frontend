@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Enable class-based dark mode */
+@variant dark (&:where(.dark, .dark *));
 
 *,
 *::before,
@@ -6,15 +10,16 @@
   box-sizing: border-box;
 }
 
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
+html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body,
+#root {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 /* Monaco Editor overrides */
@@ -22,26 +27,30 @@ body,
   background-color: #1e1e1e !important;
 }
 
-/* Scrollbar styling */
+/* Light scrollbars for normal pages */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #1e1e1e;
+  background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #424242;
-  border-radius: 4px;
+  background: #cbd5e1;
+  border-radius: 9999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #5a5a5a;
+  background: #94a3b8;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
-/* Selection color */
+/* Selection */
 ::selection {
-  background-color: #264f78;
+  background-color: #3b82f6;
+  color: #fff;
 }

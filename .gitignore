@@ -61,3 +61,6 @@ Desktop.ini
 coverage/
 *.lcov
 .nyc_output/
+
+# ── Claude Code (local AI assistant config) ───────────────────────
+.claude/

@@ -24,6 +24,14 @@ import { SubmissionDetailPage } from './pages/SubmissionDetailPage';
 // Pages — Admin
 import { AdminPage } from './pages/AdminPage';
 
+// Pages — System Design
+import { QuestionListPage } from './features/systemDesign/pages/QuestionListPage';
+import { QuestionDetailPage } from './features/systemDesign/pages/QuestionDetailPage';
+import { SubmissionsPage } from './features/systemDesign/pages/SubmissionsPage';
+import { SDSubmissionDetailPage } from './features/systemDesign/pages/SubmissionDetailPage';
+import { CreateQuestionPage } from './features/systemDesign/pages/CreateQuestionPage';
+import { EditQuestionPage } from './features/systemDesign/pages/EditQuestionPage';
+
 import { useTheme } from './hooks/useTheme';
 
 function AppShell() {
@@ -61,6 +69,12 @@ function AppShell() {
 
             {/* ProblemDetailPage needs full-height flex: handled by DashboardLayout's flex-1 */}
             <Route path="/problems/:id" element={<ProblemDetailPage />} />
+
+            {/* System Design */}
+            <Route path="/system-design" element={<QuestionListPage />} />
+            <Route path="/system-design/submissions" element={<SubmissionsPage />} />
+            <Route path="/system-design/submissions/:id" element={<SDSubmissionDetailPage />} />
+            <Route path="/system-design/:id" element={<QuestionDetailPage />} />
           </Route>
         </Route>
 
@@ -68,6 +82,9 @@ function AppShell() {
         <Route element={<AdminRoute />}>
           <Route element={<DashboardLayout />}>
             <Route path="/admin" element={<AdminPage />} />
+            {/* System Design admin */}
+            <Route path="/system-design/new" element={<CreateQuestionPage />} />
+            <Route path="/system-design/:id/edit" element={<EditQuestionPage />} />
           </Route>
         </Route>
 

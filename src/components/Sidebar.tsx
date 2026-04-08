@@ -55,6 +55,15 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
+  {
+    to: '/system-design',
+    label: 'System Design',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4.5 h-4.5">
+        <path fillRule="evenodd" d="M1 2.75A.75.75 0 011.75 2h10.5a.75.75 0 010 1.5H12v13.75a.75.75 0 01-1.5 0V3.5h-9A.75.75 0 011 2.75zM15.5 6A.75.75 0 0116.25 6h1.5a.75.75 0 010 1.5h-.75v8.75a.75.75 0 01-1.5 0V7.5h-.75A.75.75 0 0115.5 6zM3 6.75A.75.75 0 013.75 6h4.5a.75.75 0 010 1.5H8v9.25a.75.75 0 01-1.5 0V7.5h-.75A.75.75 0 013 6.75z" clipRule="evenodd" />
+      </svg>
+    ),
+  },
 ];
 
 export function Sidebar() {

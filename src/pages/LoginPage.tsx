@@ -8,7 +8,6 @@ import toast from 'react-hot-toast';
 interface FormErrors {
   email?: string;
   password?: string;
-  general?: string;
 }
 
 function validate(email: string, password: string): FormErrors {
@@ -47,7 +46,14 @@ export function LoginPage() {
       navigate(from, { replace: true });
     } catch (err: unknown) {
       const msg = extractApiError(err) ?? 'Invalid email or password';
-      setErrors({ general: msg });
+      // Route to the correct field based on the backend's specific message
+      if (msg.toLowerCase().includes('email') || msg.toLowerCase().includes('account')) {
+        setErrors({ email: msg });
+      } else if (msg.toLowerCase().includes('password')) {
+        setErrors({ password: msg });
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -56,7 +62,6 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
       <div className="w-full max-w-md">
-        {/* Card */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
           {/* Logo + Heading */}
           <div className="flex flex-col items-center mb-8">
@@ -69,12 +74,6 @@ export function LoginPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in to CompileHub</p>
           </div>
 
-          {errors.general && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-400">
-              {errors.general}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* Email */}
             <div>
@@ -84,7 +83,7 @@ export function LoginPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setErrors((prev) => ({ ...prev, email: undefined })); }}
                 placeholder="you@example.com"
                 autoComplete="email"
                 className={`w-full px-3.5 py-2.5 rounded-lg border text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none transition-colors focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
@@ -107,7 +106,7 @@ export function LoginPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); setErrors((prev) => ({ ...prev, password: undefined })); }}
                   placeholder="••••••••"
                   autoComplete="current-password"
                   className={`w-full px-3.5 py-2.5 pr-10 rounded-lg border text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none transition-colors focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${

@@ -15,11 +15,14 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// On 401, wipe auth and redirect to login
+// On 401, wipe auth and redirect to login — but skip auth endpoints
+// so login/signup errors are handled by the page itself.
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401) {
+    const url: string = error.config?.url ?? "";
+    const isAuthEndpoint = url.startsWith("/auth/");
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";

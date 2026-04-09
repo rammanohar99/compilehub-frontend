@@ -10,7 +10,7 @@ export function Navbar() {
 
   function handleLogout() {
     logout();
-    toast.success('Logged out successfully');
+    toast.success('You've been signed out');
     navigate('/login');
   }
 
@@ -20,6 +20,10 @@ export function Navbar() {
         ? 'text-blue-600 dark:text-blue-400'
         : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
     }`;
+
+  const initials = user?.name
+    ? user.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
+    : '?';
 
   return (
     <nav className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
@@ -61,7 +65,7 @@ export function Navbar() {
           )}
 
           {/* Right side */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {/* Theme toggle */}
             <button
               onClick={toggle}
@@ -80,29 +84,40 @@ export function Navbar() {
             </button>
 
             {isAuthenticated ? (
-              <>
-                <NavLink to="/profile" className={linkClass}>
-                  <span className="hidden sm:inline">{user?.name}</span>
-                  <span className="sm:hidden">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                    </svg>
+              <div className="flex items-center gap-1 pl-1">
+                {/* Avatar + name */}
+                <NavLink
+                  to="/profile"
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
+                >
+                  <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold shrink-0">
+                    {initials}
+                  </div>
+                  <span className="hidden sm:inline text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors max-w-30 truncate">
+                    {user?.name}
                   </span>
                 </NavLink>
+
+                {/* Logout */}
                 <button
                   onClick={handleLogout}
-                  className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                  title="Sign out"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 >
-                  Logout
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                    <path fillRule="evenodd" d="M3 4.25A2.25 2.25 0 015.25 2h5.5A2.25 2.25 0 0113 4.25v2a.75.75 0 01-1.5 0v-2a.75.75 0 00-.75-.75h-5.5a.75.75 0 00-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 00.75-.75v-2a.75.75 0 011.5 0v2A2.25 2.25 0 0110.75 18h-5.5A2.25 2.25 0 013 15.75V4.25z" clipRule="evenodd" />
+                    <path fillRule="evenodd" d="M6 10a.75.75 0 01.75-.75h9.546l-1.048-.943a.75.75 0 111.004-1.114l2.5 2.25a.75.75 0 010 1.114l-2.5 2.25a.75.75 0 11-1.004-1.114l1.048-.943H6.75A.75.75 0 016 10z" clipRule="evenodd" />
+                  </svg>
+                  <span className="hidden sm:inline">Sign out</span>
                 </button>
-              </>
+              </div>
             ) : (
-              <>
+              <div className="flex items-center gap-2 pl-1">
                 <Link
                   to="/login"
-                  className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors px-2 py-1.5"
                 >
-                  Login
+                  Log in
                 </Link>
                 <Link
                   to="/signup"
@@ -110,7 +125,7 @@ export function Navbar() {
                 >
                   Sign up
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>

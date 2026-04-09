@@ -9,7 +9,6 @@ interface FormErrors {
   name?: string;
   email?: string;
   password?: string;
-  general?: string;
 }
 
 function validate(name: string, email: string, password: string): FormErrors {
@@ -51,7 +50,7 @@ export function SignupPage() {
       navigate('/problems');
     } catch (err: unknown) {
       const msg = extractApiError(err) ?? 'Failed to create account';
-      setErrors({ general: msg });
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -74,12 +73,6 @@ export function SignupPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Join CompileHub today</p>
           </div>
 
-          {errors.general && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-400">
-              {errors.general}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* Name */}
             <div>
@@ -89,7 +82,7 @@ export function SignupPage() {
               <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => { setName(e.target.value); setErrors((prev) => ({ ...prev, name: undefined })); }}
                 placeholder="Arjun Sharma"
                 autoComplete="name"
                 className={`w-full px-3.5 py-2.5 rounded-lg border text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none transition-colors focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
@@ -107,7 +100,7 @@ export function SignupPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setErrors((prev) => ({ ...prev, email: undefined })); }}
                 placeholder="you@example.com"
                 autoComplete="email"
                 className={`w-full px-3.5 py-2.5 rounded-lg border text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none transition-colors focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
@@ -126,7 +119,7 @@ export function SignupPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); setErrors((prev) => ({ ...prev, password: undefined })); }}
                   placeholder="Min 8 chars, 1 uppercase, 1 number"
                   autoComplete="new-password"
                   className={`w-full px-3.5 py-2.5 pr-10 rounded-lg border text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none transition-colors focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${

@@ -130,5 +130,113 @@ export async function getSubmission(
   return data.data;
 }
 
+// ── Discussion Comments ───────────────────────────────────────────
+
+export interface SDComment {
+  id: string;
+  user: { id: string; name: string; avatarInitial: string };
+  text: string;
+  likes: number;
+  likedByMe: boolean;
+  createdAt: string;
+  timeAgo: string;
+}
+
+export interface CommentsResponse {
+  comments: SDComment[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export async function getComments(
+  questionId: string,
+  page = 1,
+): Promise<CommentsResponse> {
+  const { data } = await api.get<ApiResponse<CommentsResponse>>(
+    `/system-design/${questionId}/comments?page=${page}`,
+  );
+  return data.data;
+}
+
+export async function postComment(
+  questionId: string,
+  text: string,
+): Promise<SDComment> {
+  const { data } = await api.post<ApiResponse<SDComment>>(
+    `/system-design/${questionId}/comments`,
+    { text },
+  );
+  return data.data;
+}
+
+export async function toggleCommentLike(
+  commentId: string,
+): Promise<{ liked: boolean; likes: number }> {
+  const { data } = await api.post<ApiResponse<{ liked: boolean; likes: number }>>(
+    `/system-design/comments/${commentId}/like`,
+  );
+  return data.data;
+}
+
+export async function deleteComment(commentId: string): Promise<void> {
+  await api.delete(`/system-design/comments/${commentId}`);
+}
+
+// ── Canvas State ──────────────────────────────────────────────────
+
+export interface CanvasState {
+  nodes: object[];
+  edges: object[];
+}
+
+export async function getCanvasState(
+  questionId: string,
+): Promise<CanvasState | null> {
+  const { data } = await api.get<ApiResponse<CanvasState | null>>(
+    `/system-design/${questionId}/canvas`,
+  );
+  return data.data;
+}
+
+export async function saveCanvasState(
+  questionId: string,
+  nodes: object[],
+  edges: object[],
+): Promise<{ saved: boolean; updatedAt: string }> {
+  const { data } = await api.put<ApiResponse<{ saved: boolean; updatedAt: string }>>(
+    `/system-design/${questionId}/canvas`,
+    { nodes, edges },
+  );
+  return data.data;
+}
+
+// ── Question-scoped submission history ────────────────────────────
+
+export interface QuestionSubmissionEntry {
+  id: string;
+  answerText: string;
+  wordCount: number;
+  createdAt: string;
+  timeAgo: string;
+}
+
+export interface QuestionSubmissionsResponse {
+  submissions: QuestionSubmissionEntry[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export async function getMyQuestionSubmissions(
+  questionId: string,
+  page = 1,
+): Promise<QuestionSubmissionsResponse> {
+  const { data } = await api.get<ApiResponse<QuestionSubmissionsResponse>>(
+    `/system-design/${questionId}/submissions/me?page=${page}`,
+  );
+  return data.data;
+}
+
 // Unused-export silencer for tree-shaking consumers
 export type { SystemDesignQuestionSummary };

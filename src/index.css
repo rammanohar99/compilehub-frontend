@@ -1,6 +1,47 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Design tokens */
+@theme {
+  --color-brand: #6366f1;
+  --color-brand-glow: rgba(99, 102, 241, 0.25);
+  --color-surface: #0d0d14;
+  --color-surface-2: #13131f;
+}
+
+/* Brand glow utility */
+.glow-brand {
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.2), inset 0 0 0 1px rgba(99, 102, 241, 0.15);
+}
+
+/* React Flow dark theme overrides */
+.react-flow__controls {
+  background: #1f2937 !important;
+  border: 1px solid #374151 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4) !important;
+}
+.react-flow__controls-button {
+  background: transparent !important;
+  border-bottom: 1px solid #374151 !important;
+  color: #9ca3af !important;
+  fill: #9ca3af !important;
+}
+.react-flow__controls-button:hover {
+  background: #374151 !important;
+}
+.react-flow__minimap {
+  background: #111827 !important;
+  border: 1px solid #374151 !important;
+  border-radius: 12px !important;
+}
+.react-flow__edge-path {
+  stroke: #6366f1;
+}
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #818cf8;
+}
+
 /* Enable class-based dark mode */
 @variant dark (&:where(.dark, .dark *));
 

@@ -10,7 +10,7 @@ export function Navbar() {
 
   function handleLogout() {
     logout();
-    toast.success('You've been signed out');
+    toast.success('Signed out successfully');
     navigate('/login');
   }
 

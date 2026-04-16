@@ -31,6 +31,7 @@ import { SubmissionsPage } from './features/systemDesign/pages/SubmissionsPage';
 import { SDSubmissionDetailPage } from './features/systemDesign/pages/SubmissionDetailPage';
 import { CreateQuestionPage } from './features/systemDesign/pages/CreateQuestionPage';
 import { EditQuestionPage } from './features/systemDesign/pages/EditQuestionPage';
+import { FundamentalsPage } from './features/engFundamentals/pages/FundamentalsPage';
 
 import { useTheme } from './hooks/useTheme';
 
@@ -71,6 +72,7 @@ function AppShell() {
             <Route path="/problems/:id" element={<ProblemDetailPage />} />
 
             {/* System Design */}
+            <Route path="/fundamentals" element={<FundamentalsPage />} />
             <Route path="/system-design" element={<QuestionListPage />} />
             <Route path="/system-design/submissions" element={<SubmissionsPage />} />
             <Route path="/system-design/submissions/:id" element={<SDSubmissionDetailPage />} />

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getProblems } from '../api/problems';
@@ -13,14 +13,38 @@ const DIFFICULTIES: { value: string; label: string }[] = [
   { value: 'HARD', label: 'Hard' },
 ];
 
-const PAGE_LIMIT = 20;
+const PAGE_LIMIT = 10;
 
 export function ProblemsPage() {
   const navigate = useNavigate();
   const [difficulty, setDifficulty] = useState('');
+  const [companyInput, setCompanyInput] = useState('');
+  const [tagInput, setTagInput] = useState('');
   const [company, setCompany] = useState('');
   const [tag, setTag] = useState('');
   const [page, setPage] = useState(1);
+
+  // Debounce text filter inputs so we don't fire a query on every keystroke
+  // Capitalize first letter of each word to match DB casing (e.g. "google" → "Google")
+  function toTitleCase(str: string) {
+    return str.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+  }
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCompany(companyInput.trim() ? toTitleCase(companyInput.trim()) : '');
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [companyInput]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTag(tagInput.trim() ? toTitleCase(tagInput.trim()) : '');
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [tagInput]);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['problems', { difficulty, company, tag, page }],
@@ -31,10 +55,10 @@ export function ProblemsPage() {
 
   const problems = data?.problems ?? [];
   const totalPages = data?.totalPages ?? 1;
-
-  function handleFilterChange() {
-    setPage(1);
-  }
+  // Use values from the response so row numbers always match the displayed data,
+  // even while placeholderData is showing stale results during a page transition.
+  const dataPage = data?.page ?? page;
+  const dataLimit = data?.limit ?? PAGE_LIMIT;
 
   return (
     <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-950">
@@ -51,7 +75,7 @@ export function ProblemsPage() {
         <div className="flex flex-wrap gap-3 mb-6">
           <select
             value={difficulty}
-            onChange={(e) => { setDifficulty(e.target.value); handleFilterChange(); }}
+            onChange={(e) => { setDifficulty(e.target.value); setPage(1); }}
             className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           >
             {DIFFICULTIES.map((d) => (
@@ -61,23 +85,23 @@ export function ProblemsPage() {
 
           <input
             type="text"
-            value={company}
-            onChange={(e) => { setCompany(e.target.value); handleFilterChange(); }}
-            placeholder="Filter by company..."
+            value={companyInput}
+            onChange={(e) => setCompanyInput(e.target.value)}
+            placeholder="e.g. Google, Amazon..."
             className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors w-44"
           />
 
           <input
             type="text"
-            value={tag}
-            onChange={(e) => { setTag(e.target.value); handleFilterChange(); }}
-            placeholder="Filter by tag..."
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            placeholder="e.g. array, graph..."
             className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors w-44"
           />
 
-          {(difficulty || company || tag) && (
+          {(difficulty || companyInput || tagInput) && (
             <button
-              onClick={() => { setDifficulty(''); setCompany(''); setTag(''); setPage(1); }}
+              onClick={() => { setDifficulty(''); setCompanyInput(''); setTagInput(''); setCompany(''); setTag(''); setPage(1); }}
               className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               Clear filters
@@ -120,7 +144,7 @@ export function ProblemsPage() {
                     className="cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
                   >
                     <td className="px-4 py-3.5 text-sm text-gray-400 dark:text-gray-500 font-mono">
-                      {(page - 1) * PAGE_LIMIT + idx + 1}
+                      {(dataPage - 1) * dataLimit + idx + 1}
                     </td>
                     <td className="px-4 py-3.5">
                       <span className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -168,7 +192,7 @@ export function ProblemsPage() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {data && totalPages >= 1 && (
           <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Page {page} of {totalPages}

@@ -89,13 +89,16 @@ const TOOLS_ITEMS: NavItem[] = [
 // ── Nav link ──────────────────────────────────────────────────────
 
 function NavItem({ item }: { item: NavItem }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   return (
     <NavLink
       to={item.to}
       className={({ isActive }) =>
         `group flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 relative ${
           isActive
-            ? 'text-white'
+            ? ''
             : 'text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800/60'
         }`
       }
@@ -123,7 +126,10 @@ function NavItem({ item }: { item: NavItem }) {
           </span>
 
           {/* Label */}
-          <span className="flex-1 relative z-10" style={{ color: isActive ? '#e0e7ff' : undefined }}>
+          <span
+            className="flex-1 relative z-10"
+            style={{ color: isActive ? (isDark ? '#e0e7ff' : '#4338ca') : undefined }}
+          >
             {item.label}
           </span>
 

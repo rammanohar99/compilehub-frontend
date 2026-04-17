@@ -33,11 +33,7 @@ import { CreateQuestionPage } from './features/systemDesign/pages/CreateQuestion
 import { EditQuestionPage } from './features/systemDesign/pages/EditQuestionPage';
 import { FundamentalsPage } from './features/engFundamentals/pages/FundamentalsPage';
 
-import { useTheme } from './hooks/useTheme';
-
 function AppShell() {
-  useTheme();
-
   return (
     <BrowserRouter>
       <Toaster

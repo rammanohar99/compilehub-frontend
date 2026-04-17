@@ -34,18 +34,18 @@ function Md({ children }: { children: string }) {
 
 // ── Shared primitives ─────────────────────────────────────────────
 
-const DIFF_STYLES: Record<Difficulty, { bg: string; color: string; border: string; label: string }> = {
-  EASY:   { bg: 'rgba(16,185,129,0.1)',  color: '#34d399', border: 'rgba(16,185,129,0.25)', label: 'Easy'   },
-  MEDIUM: { bg: 'rgba(245,158,11,0.1)',  color: '#fbbf24', border: 'rgba(245,158,11,0.25)', label: 'Medium' },
-  HARD:   { bg: 'rgba(239,68,68,0.1)',   color: '#f87171', border: 'rgba(239,68,68,0.25)',  label: 'Hard'   },
+const DIFF_STYLES: Record<Difficulty, { bg: string; color: string; border: string; label: string; bgLight: string; colorLight: string; borderLight: string }> = {
+  EASY:   { bg: 'rgba(16,185,129,0.1)',  color: '#34d399', border: 'rgba(16,185,129,0.25)', label: 'Easy',   bgLight: 'rgba(16,185,129,0.12)', colorLight: '#059669', borderLight: 'rgba(16,185,129,0.35)' },
+  MEDIUM: { bg: 'rgba(245,158,11,0.1)',  color: '#fbbf24', border: 'rgba(245,158,11,0.25)', label: 'Medium', bgLight: 'rgba(245,158,11,0.12)', colorLight: '#d97706', borderLight: 'rgba(245,158,11,0.35)' },
+  HARD:   { bg: 'rgba(239,68,68,0.1)',   color: '#f87171', border: 'rgba(239,68,68,0.25)',  label: 'Hard',   bgLight: 'rgba(239,68,68,0.1)',  colorLight: '#dc2626', borderLight: 'rgba(239,68,68,0.3)'  },
 };
 
 function DiffBadge({ difficulty }: { difficulty: Difficulty }) {
   const s = DIFF_STYLES[difficulty];
   return (
     <span
-      className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
-      style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}` }}
+      className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 dark:bg-opacity-100"
+      style={{ background: s.bg, color: s.colorLight, border: `1px solid ${s.border}` }}
     >
       {s.label}
     </span>
@@ -178,7 +178,7 @@ function QuizBlock({
         >
           <p
             className="font-bold mb-1"
-            style={{ color: selected === correctIndex ? '#34d399' : '#818cf8' }}
+            style={{ color: selected === correctIndex ? '#059669' : '#6366f1' }}
           >
             {selected === correctIndex ? '✓ Correct!' : `✗ Incorrect — answer is ${String.fromCharCode(65 + correctIndex)}`}
           </p>
@@ -375,7 +375,7 @@ function FundamentalsTab() {
                         className="absolute top-3 right-3 flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
                         style={{
                           background: 'rgba(16,185,129,0.1)',
-                          color: '#34d399',
+                          color: '#059669',
                           border: '1px solid rgba(16,185,129,0.25)',
                         }}
                       >
@@ -466,7 +466,7 @@ function ScenarioCard({ scenario }: { scenario: DebugScenario }) {
                 className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                 style={{
                   background: result.correct ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-                  color: result.correct ? '#34d399' : '#f87171',
+                  color: result.correct ? '#059669' : '#dc2626',
                   border: `1px solid ${result.correct ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
                 }}
               >

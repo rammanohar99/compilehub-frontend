@@ -12,14 +12,14 @@ export function RunButton({ onClick, loading, disabled }: RunButtonProps) {
       className="
         inline-flex items-center gap-2
         px-4 py-1.5
-        bg-[#007acc] hover:bg-[#1a8ad4]
-        active:bg-[#005fa3]
-        disabled:bg-[#2d5a7a] disabled:cursor-not-allowed
+        bg-blue-600 hover:bg-blue-700
+        active:bg-blue-800
+        disabled:bg-blue-400 disabled:cursor-not-allowed
         text-white text-sm font-semibold
         rounded-md
         transition-colors duration-150
         outline-none
-        focus:ring-2 focus:ring-[#007acc] focus:ring-offset-2 focus:ring-offset-[#1e1e1e]
+        focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
         select-none
       "
     >

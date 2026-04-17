@@ -19,10 +19,11 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { ComponentPalette } from './ComponentPalette';
+import { useTheme } from '../../../hooks/useTheme';
 
 // ── Node type configs ─────────────────────────────────────────────
 
-const NODE_CONFIGS: Record<string, { icon: string; bg: string; border: string; handleColor: string; textColor: string }> = {
+const NODE_CONFIGS_DARK: Record<string, { icon: string; bg: string; border: string; handleColor: string; textColor: string }> = {
   client:       { icon: '💻', bg: '#0c1929', border: '#38bdf8', handleColor: '#38bdf8', textColor: '#7dd3fc' },
   loadbalancer: { icon: '⚖️', bg: '#150d27', border: '#a78bfa', handleColor: '#a78bfa', textColor: '#c4b5fd' },
   server:       { icon: '🖥️', bg: '#0d1f18', border: '#34d399', handleColor: '#34d399', textColor: '#6ee7b7' },
@@ -32,7 +33,22 @@ const NODE_CONFIGS: Record<string, { icon: string; bg: string; border: string; h
   cdn:          { icon: '🌐', bg: '#091e1e', border: '#2dd4bf', handleColor: '#2dd4bf', textColor: '#5eead4' },
 };
 
-const DEFAULT_CONFIG = NODE_CONFIGS.server;
+const NODE_CONFIGS_LIGHT: Record<string, { icon: string; bg: string; border: string; handleColor: string; textColor: string }> = {
+  client:       { icon: '💻', bg: '#eff6ff', border: '#38bdf8', handleColor: '#0ea5e9', textColor: '#0369a1' },
+  loadbalancer: { icon: '⚖️', bg: '#f5f3ff', border: '#a78bfa', handleColor: '#7c3aed', textColor: '#5b21b6' },
+  server:       { icon: '🖥️', bg: '#f0fdf4', border: '#34d399', handleColor: '#059669', textColor: '#065f46' },
+  database:     { icon: '🗄️', bg: '#fffbeb', border: '#fbbf24', handleColor: '#d97706', textColor: '#92400e' },
+  cache:        { icon: '⚡', bg: '#fff1f2', border: '#fb7185', handleColor: '#e11d48', textColor: '#9f1239' },
+  queue:        { icon: '📨', bg: '#fff7ed', border: '#fb923c', handleColor: '#ea580c', textColor: '#9a3412' },
+  cdn:          { icon: '🌐', bg: '#f0fdfa', border: '#2dd4bf', handleColor: '#0d9488', textColor: '#134e4a' },
+};
+
+function getNodeConfigs(isDark: boolean) {
+  return isDark ? NODE_CONFIGS_DARK : NODE_CONFIGS_LIGHT;
+}
+
+const DEFAULT_CONFIG_DARK = NODE_CONFIGS_DARK.server;
+const DEFAULT_CONFIG_LIGHT = NODE_CONFIGS_LIGHT.server;
 
 // ── Custom Node ───────────────────────────────────────────────────
 
@@ -43,6 +59,10 @@ interface SystemNodeData {
 }
 
 function SystemNode({ data, selected }: { data: SystemNodeData; selected?: boolean }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const NODE_CONFIGS = getNodeConfigs(isDark);
+  const DEFAULT_CONFIG = isDark ? DEFAULT_CONFIG_DARK : DEFAULT_CONFIG_LIGHT;
   const cfg = NODE_CONFIGS[data.type] ?? DEFAULT_CONFIG;
 
   return (
@@ -51,8 +71,8 @@ function SystemNode({ data, selected }: { data: SystemNodeData; selected?: boole
         background: cfg.bg,
         border: `2px solid ${selected ? '#818cf8' : cfg.border}`,
         boxShadow: selected
-          ? `0 0 0 2px rgba(129,140,248,0.3), 0 8px 24px rgba(0,0,0,0.5)`
-          : `0 0 16px ${cfg.border}28, 0 4px 12px rgba(0,0,0,0.4)`,
+          ? `0 0 0 2px rgba(129,140,248,0.3), 0 8px 24px ${isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.15)'}`
+          : `0 0 16px ${cfg.border}28, 0 4px 12px ${isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.08)'}`,
         transition: 'all 0.15s ease',
       }}
       className="rounded-xl px-4 py-3 min-w-[120px] text-center cursor-default"
@@ -110,6 +130,8 @@ function CanvasInner({ initialNodes, initialEdges, onCanvasChange }: CanvasInner
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChangeInternal] = useNodesState<Node>(initialNodes ?? INIT_NODES);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges ?? []);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   // Notify parent whenever nodes or edges change (for debounced auto-save)
   useEffect(() => {
@@ -187,21 +209,23 @@ function CanvasInner({ initialNodes, initialEdges, onCanvasChange }: CanvasInner
             animated: true,
             style: { stroke: '#6366f1', strokeWidth: 2 },
           }}
-          style={{ background: '#060612' }}
+          style={{ background: isDark ? '#060612' : '#f8fafc' }}
         >
           <Background
             variant={BackgroundVariant.Dots}
-            color="#1e2035"
+            color={isDark ? '#1e2035' : '#cbd5e1'}
             gap={24}
             size={1.5}
           />
           <Controls showInteractive={false} />
           <MiniMap
             nodeColor={(n) => {
-              const cfg = NODE_CONFIGS[(n.data as SystemNodeData)?.type] ?? DEFAULT_CONFIG;
+              const configs = getNodeConfigs(isDark);
+              const defaultCfg = isDark ? DEFAULT_CONFIG_DARK : DEFAULT_CONFIG_LIGHT;
+              const cfg = configs[(n.data as SystemNodeData)?.type] ?? defaultCfg;
               return cfg.border;
             }}
-            maskColor="rgba(6, 6, 18, 0.7)"
+            maskColor={isDark ? 'rgba(6, 6, 18, 0.7)' : 'rgba(248, 250, 252, 0.7)'}
           />
         </ReactFlow>
 
@@ -209,7 +233,7 @@ function CanvasInner({ initialNodes, initialEdges, onCanvasChange }: CanvasInner
         <div className="absolute top-3 right-3 flex gap-2 z-10">
           <button
             onClick={clearCanvas}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800/90 border border-gray-700 text-xs font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition-colors backdrop-blur-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/90 dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors backdrop-blur-sm shadow-sm"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
               <path fillRule="evenodd" d="M5 3.25V4H2.75a.75.75 0 000 1.5h.3l.815 8.15A1.5 1.5 0 005.357 15h5.285a1.5 1.5 0 001.493-1.35l.815-8.15h.3a.75.75 0 000-1.5H11v-.75A2.25 2.25 0 008.75 1h-1.5A2.25 2.25 0 005 3.25zm2.25-.75a.75.75 0 00-.75.75V4h3v-.75a.75.75 0 00-.75-.75h-1.5zM6.05 6a.75.75 0 01.787.713l.275 5.5a.75.75 0 01-1.498.075l-.275-5.5A.75.75 0 016.05 6zm3.9 0a.75.75 0 01.712.787l-.275 5.5a.75.75 0 01-1.498-.075l.275-5.5a.75.75 0 01.786-.711z" clipRule="evenodd" />
@@ -227,8 +251,8 @@ function CanvasInner({ initialNodes, initialEdges, onCanvasChange }: CanvasInner
                   <path d="M12 5v14M5 12h14" />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-gray-500">Drag components from the left panel</p>
-              <p className="text-xs text-gray-600 mt-1">Connect nodes to design your system</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-500">Drag components from the left panel</p>
+              <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">Connect nodes to design your system</p>
             </div>
           </div>
         )}

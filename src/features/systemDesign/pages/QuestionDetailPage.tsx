@@ -61,14 +61,14 @@ export function QuestionDetailPage() {
 
   if (isError || !question) {
     return (
-      <div className="flex items-center justify-center h-full bg-gray-950">
+      <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-gray-950">
         <div className="text-center space-y-3">
           <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6 text-red-400">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
             </svg>
           </div>
-          <p className="text-base font-semibold text-white">Failed to load question</p>
+          <p className="text-base font-semibold text-gray-900 dark:text-white">Failed to load question</p>
           <Link to="/system-design" className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
             ← Back to questions
           </Link>
@@ -78,9 +78,9 @@ export function QuestionDetailPage() {
   }
 
   return (
-    <div className="flex h-full overflow-hidden bg-gray-950">
+    <div className="flex h-full overflow-hidden bg-gray-50 dark:bg-gray-950">
       <LeftPanel question={question} isAdmin={user?.role === 'ADMIN'} />
-      <div className="w-px bg-gray-800 shrink-0" />
+      <div className="w-px bg-gray-200 dark:bg-gray-800 shrink-0" />
       <RightPanel
         answer={answer}
         onChange={setAnswer}
@@ -108,10 +108,10 @@ function LeftPanel({ question, isAdmin }: LeftPanelProps) {
 
   return (
     <div className="w-1/2 flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-800 shrink-0">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-800 shrink-0">
         <Link
           to="/system-design"
-          className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+          className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
             <path fillRule="evenodd" d="M9.78 4.22a.75.75 0 010 1.06L7.06 8l2.72 2.72a.75.75 0 11-1.06 1.06L5.47 8.53a.75.75 0 010-1.06l3.25-3.25a.75.75 0 011.06 0z" clipRule="evenodd" />
@@ -132,10 +132,10 @@ function LeftPanel({ question, isAdmin }: LeftPanelProps) {
       </div>
 
       <div className="px-5 pt-4 pb-0 shrink-0">
-        <h1 className="text-lg font-bold text-white leading-snug">{question.title}</h1>
+        <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-snug">{question.title}</h1>
       </div>
 
-      <div className="flex px-5 mt-3 border-b border-gray-800 shrink-0 gap-0">
+      <div className="flex px-5 mt-3 border-b border-gray-200 dark:border-gray-800 shrink-0 gap-0">
         {LEFT_TABS.map((tab) => (
           <button
             key={tab.id}
@@ -143,7 +143,7 @@ function LeftPanel({ question, isAdmin }: LeftPanelProps) {
             className={`px-3 py-2.5 text-xs font-medium transition-colors border-b-2 -mb-px ${
               activeTab === tab.id
                 ? 'border-indigo-500 text-indigo-400'
-                : 'border-transparent text-gray-500 hover:text-gray-300'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
             {tab.label}
@@ -166,14 +166,14 @@ function LeftPanel({ question, isAdmin }: LeftPanelProps) {
 function DescriptionTab({ question }: { question: SystemDesignQuestion }) {
   return (
     <div className="p-5 space-y-6">
-      <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">{question.description}</p>
+      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{question.description}</p>
 
       {question.requirements.length > 0 && (
         <div>
-          <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.1em] mb-3">Requirements</h2>
+          <h2 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-3">Requirements</h2>
           <ol className="space-y-2">
             {question.requirements.map((req, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm text-gray-300">
+              <li key={i} className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
                 <span className="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-indigo-500/15 text-indigo-400 text-[10px] font-bold mt-0.5">
                   {i + 1}
                 </span>
@@ -186,11 +186,11 @@ function DescriptionTab({ question }: { question: SystemDesignQuestion }) {
 
       {question.constraints.length > 0 && (
         <div>
-          <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.1em] mb-3">Constraints</h2>
+          <h2 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-3">Constraints</h2>
           <ul className="space-y-2">
             {question.constraints.map((c, i) => (
-              <li key={i} className="flex items-start gap-2.5 text-sm text-gray-300">
-                <span className="shrink-0 w-1 h-1 rounded-full bg-gray-600 mt-2" />
+              <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700 dark:text-gray-300">
+                <span className="shrink-0 w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-600 mt-2" />
                 {c}
               </li>
             ))}
@@ -258,12 +258,12 @@ function SolutionsTab({ question }: { question: SystemDesignQuestion }) {
 
           {question.solution.tradeoffs.length > 0 && (
             <div>
-              <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.1em] mb-3">Tradeoffs</h3>
+              <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.1em] mb-3">Tradeoffs</h3>
               <div className="space-y-2.5">
                 {question.solution.tradeoffs.map((t, i) => (
-                  <div key={i} className="p-3.5 rounded-xl bg-gray-900 border border-gray-800">
-                    <p className="text-sm font-semibold text-white">{(t as unknown as { aspect: string }).aspect}</p>
-                    <p className="text-sm text-gray-400 mt-1 leading-relaxed">{(t as unknown as { tradeoff: string }).tradeoff}</p>
+                  <div key={i} className="p-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{(t as unknown as { aspect: string }).aspect}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{(t as unknown as { tradeoff: string }).tradeoff}</p>
                   </div>
                 ))}
               </div>
@@ -347,7 +347,7 @@ function DiscussionTab({ questionId }: { questionId: string }) {
           onChange={(e) => setCommentText(e.target.value)}
           placeholder="Share your approach..."
           rows={3}
-          className="w-full resize-none p-3 text-sm text-gray-200 bg-gray-900 border border-gray-800 rounded-xl outline-none focus:border-indigo-500/50 placeholder-gray-600 leading-relaxed"
+          className="w-full resize-none p-3 text-sm text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:border-indigo-500/50 placeholder-gray-400 dark:placeholder-gray-600 leading-relaxed"
         />
         <div className="flex items-center justify-between">
           <span className={`text-xs ${commentText.length < 5 ? 'text-gray-600' : 'text-gray-400'}`}>
@@ -370,7 +370,7 @@ function DiscussionTab({ questionId }: { questionId: string }) {
         <p className="text-xs text-gray-600 text-center py-6">No comments yet — be the first!</p>
       ) : (
         comments.map((item: SDComment) => (
-          <div key={item.id} className="p-4 rounded-xl bg-gray-900 border border-gray-800">
+          <div key={item.id} className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
             <div className="flex items-center gap-2.5 mb-2.5">
               <div
                 className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
@@ -379,19 +379,19 @@ function DiscussionTab({ questionId }: { questionId: string }) {
                 {item.user.avatarInitial}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-gray-200">{item.user.name}</p>
-                <p className="text-[10px] text-gray-500">{item.timeAgo}</p>
+                <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{item.user.name}</p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500">{item.timeAgo}</p>
               </div>
               {(user?.id === item.user.id || user?.role === 'ADMIN') && (
                 <button
                   onClick={() => deleteMutation.mutate(item.id)}
-                  className="text-gray-600 hover:text-red-400 transition-colors text-[10px]"
+                  className="text-gray-400 hover:text-red-400 transition-colors text-[10px]"
                 >
                   Delete
                 </button>
               )}
             </div>
-            <p className="text-sm text-gray-300 leading-relaxed">{item.text}</p>
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{item.text}</p>
             <div className="flex items-center gap-1.5 mt-3">
               <button
                 onClick={() => likeMutation.mutate(item.id)}
@@ -444,11 +444,11 @@ function AIHintTab({ hints }: { hints: string[] }) {
 
       <div className="space-y-3">
         {hints.slice(0, revealed).map((hint, i) => (
-          <div key={i} className="p-4 rounded-xl bg-gray-900 border border-gray-800">
+          <div key={i} className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
             <span className="text-xs font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">
               Hint {i + 1}
             </span>
-            <p className="text-sm text-gray-300 leading-relaxed mt-2">{hint}</p>
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mt-2">{hint}</p>
           </div>
         ))}
       </div>
@@ -514,8 +514,8 @@ function RightPanel({ answer, onChange, onSubmit, isSubmitting, questionId }: Ri
   const isValid = answer.trim().length >= MIN_ANSWER_LENGTH;
 
   return (
-    <div className="w-1/2 flex flex-col bg-gray-950 overflow-hidden">
-      <div className="flex items-center justify-between border-b border-gray-800 px-4 shrink-0">
+    <div className="w-1/2 flex flex-col bg-white dark:bg-gray-950 overflow-hidden">
+      <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 px-4 shrink-0">
         <div className="flex gap-0">
           {RIGHT_TABS.map((tab) => (
             <button
@@ -524,7 +524,7 @@ function RightPanel({ answer, onChange, onSubmit, isSubmitting, questionId }: Ri
               className={`flex items-center gap-1.5 px-3 py-3 text-xs font-medium transition-colors border-b-2 -mb-px ${
                 activeTab === tab.id
                   ? 'border-indigo-500 text-indigo-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-300'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
               {tab.icon}
@@ -533,7 +533,7 @@ function RightPanel({ answer, onChange, onSubmit, isSubmitting, questionId }: Ri
           ))}
         </div>
         {activeTab === 'text' && (
-          <span className={`text-xs font-mono ${charCount < MIN_ANSWER_LENGTH ? 'text-gray-600' : 'text-emerald-400'}`}>
+          <span className={`text-xs font-mono ${charCount < MIN_ANSWER_LENGTH ? 'text-gray-400 dark:text-gray-600' : 'text-emerald-500 dark:text-emerald-400'}`}>
             {charCount} chars
           </span>
         )}
@@ -556,11 +556,11 @@ function RightPanel({ answer, onChange, onSubmit, isSubmitting, questionId }: Ri
                 '• Scalability and reliability strategies',
                 '• Estimated capacity and bottlenecks',
               ].join('\n')}
-              className="flex-1 resize-none p-5 text-sm text-gray-200 bg-transparent outline-none placeholder-gray-700 leading-relaxed font-mono"
+              className="flex-1 resize-none p-5 text-sm text-gray-800 dark:text-gray-200 bg-transparent outline-none placeholder-gray-300 dark:placeholder-gray-700 leading-relaxed font-mono"
             />
-            <div className="px-5 py-3.5 border-t border-gray-800 shrink-0 flex items-center justify-between gap-4">
+            <div className="px-5 py-3.5 border-t border-gray-200 dark:border-gray-800 shrink-0 flex items-center justify-between gap-4">
               {!isValid && charCount > 0 && (
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-400 dark:text-gray-600">
                   {MIN_ANSWER_LENGTH - answer.trim().length} more chars needed
                 </p>
               )}
@@ -696,18 +696,18 @@ function HistoryTab({ questionId }: { questionId: string }) {
       {submissions.map((item) => (
         <div
           key={item.id}
-          className="p-4 rounded-xl bg-gray-900 border border-gray-800 hover:border-indigo-500/30 transition-colors"
+          className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-indigo-500/30 transition-colors"
         >
           <div className="flex items-center justify-between mb-2">
             <div>
-              <p className="text-xs font-semibold text-gray-300">
+              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                 {new Date(item.createdAt).toLocaleDateString('en-US', {
                   month: 'short', day: 'numeric', year: 'numeric',
                 })}
               </p>
-              <p className="text-[10px] text-gray-600">{item.timeAgo}</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-600">{item.timeAgo}</p>
             </div>
-            <span className="text-[10px] text-gray-500 bg-gray-800 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
               {item.wordCount} words
             </span>
           </div>

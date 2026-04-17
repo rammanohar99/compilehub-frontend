@@ -104,10 +104,10 @@ export function ComponentPalette({ className = '' }: ComponentPaletteProps) {
   };
 
   return (
-    <div className={`flex flex-col bg-gray-900/90 border-r border-gray-800 ${className}`} style={{ width: 180 }}>
-      <div className="px-3 pt-3 pb-2 border-b border-gray-800 shrink-0">
-        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.12em]">Components</p>
-        <p className="text-[10px] text-gray-600 mt-0.5">Drag onto canvas</p>
+    <div className={`flex flex-col bg-white dark:bg-gray-900/90 border-r border-gray-200 dark:border-gray-800 ${className}`} style={{ width: 180 }}>
+      <div className="px-3 pt-3 pb-2 border-b border-gray-200 dark:border-gray-800 shrink-0">
+        <p className="text-[10px] font-bold text-gray-500 dark:text-gray-500 uppercase tracking-[0.12em]">Components</p>
+        <p className="text-[10px] text-gray-400 dark:text-gray-600 mt-0.5">Drag onto canvas</p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
@@ -127,8 +127,8 @@ export function ComponentPalette({ className = '' }: ComponentPaletteProps) {
         ))}
       </div>
 
-      <div className="p-2.5 border-t border-gray-800 shrink-0">
-        <p className="text-[10px] text-gray-600 leading-relaxed">
+      <div className="p-2.5 border-t border-gray-200 dark:border-gray-800 shrink-0">
+        <p className="text-[10px] text-gray-400 dark:text-gray-600 leading-relaxed">
           Connect nodes by dragging between handle points.
         </p>
       </div>

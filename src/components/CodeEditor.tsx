@@ -1,5 +1,6 @@
 import Editor, { type OnMount } from '@monaco-editor/react';
 import { useRef } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import type { Language } from '../types';
 
 interface CodeEditorProps {
@@ -11,21 +12,30 @@ interface CodeEditorProps {
 
 export function CodeEditor({ code, language, onChange, readOnly }: CodeEditorProps) {
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
+  const { theme } = useTheme();
 
   const handleMount: OnMount = (editor) => {
     editorRef.current = editor;
     editor.focus();
   };
 
+  const isDark = theme === 'dark';
+
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex items-center justify-between px-4 py-2 bg-[#252526] border-b border-[#3e3e3e]">
+      <div
+        className={`flex items-center justify-between px-4 py-2 border-b ${
+          isDark
+            ? 'bg-[#252526] border-[#3e3e3e]'
+            : 'bg-gray-100 border-gray-200'
+        }`}
+      >
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
           <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
           <span className="w-3 h-3 rounded-full bg-[#28c840]" />
         </div>
-        <span className="text-xs text-[#858585] font-mono">
+        <span className={`text-xs font-mono ${isDark ? 'text-[#858585]' : 'text-gray-500'}`}>
           solution.{getExtension(language.monacoId)}
         </span>
         <div className="w-16" />
@@ -37,7 +47,7 @@ export function CodeEditor({ code, language, onChange, readOnly }: CodeEditorPro
           value={code}
           onChange={(val) => onChange(val ?? '')}
           onMount={handleMount}
-          theme="vs-dark"
+          theme={isDark ? 'vs-dark' : 'light'}
           options={{
             fontSize: 14,
             fontFamily: "'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace",

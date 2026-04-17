@@ -189,14 +189,14 @@ function HeroSection() {
               {/* Right: editor + feedback */}
               <div className="flex-1 flex flex-col">
                 <div className="flex-1 bg-[#1e1e1e] p-4 font-mono text-xs overflow-hidden">
-                  <div className="text-[#569cd6]">def <span className="text-[#dcdcaa]">twoSum</span><span className="text-white">(nums, target):</span></div>
+                  <div className="text-[#569cd6]">def <span className="text-[#dcdcaa]">twoSum</span><span className="text-[#d4d4d4]">(nums, target):</span></div>
                   <div className="text-[#6a9955] mt-1 ml-4"># HashMapped approach</div>
-                  <div className="text-white ml-4">seen = {'{}'}</div>
-                  <div className="text-[#c586c0] ml-4">for <span className="text-white">i, n</span> <span className="text-[#c586c0]">in</span> <span className="text-[#dcdcaa]">enumerate</span><span className="text-white">(nums):</span></div>
-                  <div className="text-white ml-8">diff = target - n</div>
-                  <div className="text-[#c586c0] ml-8">if <span className="text-white">diff</span> <span className="text-[#c586c0]">in</span> <span className="text-white">seen:</span></div>
-                  <div className="text-[#c586c0] ml-12">return <span className="text-white">[seen[diff], i]</span></div>
-                  <div className="text-white ml-8">seen[n] = i</div>
+                  <div className="text-[#d4d4d4] ml-4">seen = {'{}'}</div>
+                  <div className="text-[#c586c0] ml-4">for <span className="text-[#d4d4d4]">i, n</span> <span className="text-[#c586c0]">in</span> <span className="text-[#dcdcaa]">enumerate</span><span className="text-[#d4d4d4]">(nums):</span></div>
+                  <div className="text-[#d4d4d4] ml-8">diff = target - n</div>
+                  <div className="text-[#c586c0] ml-8">if <span className="text-[#d4d4d4]">diff</span> <span className="text-[#c586c0]">in</span> <span className="text-[#d4d4d4]">seen:</span></div>
+                  <div className="text-[#c586c0] ml-12">return <span className="text-[#d4d4d4]">[seen[diff], i]</span></div>
+                  <div className="text-[#d4d4d4] ml-8">seen[n] = i</div>
                 </div>
 
                 {/* AI Feedback */}

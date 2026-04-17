@@ -134,7 +134,7 @@ export function SubmissionDetailPage() {
         {submission.feedback && (
           <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
             <h3 className="text-sm font-semibold text-red-700 dark:text-red-400 mb-2">Feedback</h3>
-            <pre className="text-sm text-red-700 dark:text-red-400 font-mono whitespace-pre-wrap break-words">
+            <pre className="text-sm text-red-700 dark:text-red-400 font-mono whitespace-pre-wrap wrap-break-word">
               {submission.feedback}
             </pre>
           </div>

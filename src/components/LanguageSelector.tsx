@@ -20,17 +20,18 @@ export function LanguageSelector({ selected, onChange, disabled }: LanguageSelec
         disabled={disabled}
         className="
           appearance-none
-          bg-[#2d2d2d] text-[#d4d4d4]
-          border border-[#3e3e3e]
+          bg-white dark:bg-[#2d2d2d]
+          text-gray-900 dark:text-[#d4d4d4]
+          border border-gray-300 dark:border-[#3e3e3e]
           rounded-md
           pl-3 pr-8 py-1.5
           text-sm font-medium
           cursor-pointer
           outline-none
           transition-colors duration-150
-          hover:border-[#6b6b6b]
-          focus:border-[#007acc]
-          focus:ring-1 focus:ring-[#007acc]
+          hover:border-gray-400 dark:hover:border-[#6b6b6b]
+          focus:border-blue-500 dark:focus:border-[#007acc]
+          focus:ring-1 focus:ring-blue-500 dark:focus:ring-[#007acc]
           disabled:opacity-50 disabled:cursor-not-allowed
         "
       >

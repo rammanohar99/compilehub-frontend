@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
+import { useTheme } from '../hooks/useTheme';
 import { getProblems } from '../api/problems';
 import { getUserSubmissions } from '../api/submissions';
 import { getUserStats, getUserActivity, getTopicStrength, getLearningPath } from '../api/users';
@@ -20,12 +21,14 @@ interface StatCardProps {
 }
 
 function StatCard({ label, value, sub, icon, gradient, glowColor }: StatCardProps) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   return (
     <div
       className="relative overflow-hidden rounded-2xl p-5 border"
       style={{
-        background: 'rgba(255,255,255,0.03)',
-        borderColor: 'rgba(255,255,255,0.06)',
+        background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.9)',
+        borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
         backdropFilter: 'blur(12px)',
       }}
     >
@@ -35,7 +38,7 @@ function StatCard({ label, value, sub, icon, gradient, glowColor }: StatCardProp
       />
       <div className="relative">
         <div className="flex items-start justify-between mb-4">
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.12em]">{label}</p>
+          <p className={`text-[10px] font-bold uppercase tracking-[0.12em] ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{label}</p>
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
             style={{ background: gradient, boxShadow: `0 4px 12px ${glowColor}60` }}
@@ -43,8 +46,8 @@ function StatCard({ label, value, sub, icon, gradient, glowColor }: StatCardProp
             {icon}
           </div>
         </div>
-        <p className="text-3xl font-bold text-white tracking-tight">{value}</p>
-        {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
+        <p className={`text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>{value}</p>
+        {sub && <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{sub}</p>}
       </div>
     </div>
   );
@@ -53,12 +56,19 @@ function StatCard({ label, value, sub, icon, gradient, glowColor }: StatCardProp
 // ── Activity Heatmap ──────────────────────────────────────────────
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const LEVEL_COLORS = [
+const LEVEL_COLORS_DARK = [
   'bg-gray-800',
   'bg-indigo-900',
   'bg-indigo-700',
   'bg-indigo-500',
   'bg-indigo-400',
+];
+const LEVEL_COLORS_LIGHT = [
+  'bg-gray-200',
+  'bg-indigo-200',
+  'bg-indigo-400',
+  'bg-indigo-500',
+  'bg-indigo-600',
 ];
 
 /** Map { date → count } to a 364-slot index array (0 = 364 days ago, 363 = today). */
@@ -80,6 +90,10 @@ function buildHeatmapArray(activity: { date: string; count: number }[]): number[
 }
 
 function ActivityHeatmap({ userId }: { userId: string }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const LEVEL_COLORS = isDark ? LEVEL_COLORS_DARK : LEVEL_COLORS_LIGHT;
+
   const { data: activity = [] } = useQuery({
     queryKey: ['user-activity', userId],
     queryFn: () => getUserActivity(userId),
@@ -114,21 +128,24 @@ function ActivityHeatmap({ userId }: { userId: string }) {
   return (
     <div
       className="rounded-2xl p-5 border"
-      style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}
+      style={{
+        background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.9)',
+        borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
+      }}
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-white">Activity</h3>
+        <h3 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Activity</h3>
         <div className="flex items-center gap-1.5">
-          <span className="text-xs text-gray-600">Less</span>
+          <span className={`text-xs ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>Less</span>
           {LEVEL_COLORS.map((c, i) => (
             <div key={i} className={`w-2.5 h-2.5 rounded-sm ${c}`} />
           ))}
-          <span className="text-xs text-gray-600">More</span>
+          <span className={`text-xs ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>More</span>
         </div>
       </div>
       <div className="flex gap-1 mb-1 pl-0 overflow-hidden">
         {MONTHS.map((m, i) => (
-          <div key={i} className="text-[9px] text-gray-600 flex-1">{m}</div>
+          <div key={i} className={`text-[9px] flex-1 ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>{m}</div>
         ))}
       </div>
       <div className="flex gap-1 overflow-x-auto pb-1">{weeks}</div>
@@ -139,6 +156,9 @@ function ActivityHeatmap({ userId }: { userId: string }) {
 // ── Learning path ─────────────────────────────────────────────────
 
 function LearningPath({ userId }: { userId: string }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const { data } = useQuery({
     queryKey: ['learning-path', userId],
     queryFn: () => getLearningPath(userId),
@@ -153,23 +173,26 @@ function LearningPath({ userId }: { userId: string }) {
   return (
     <div
       className="rounded-2xl p-5 border"
-      style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}
+      style={{
+        background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.9)',
+        borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
+      }}
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-white">Learning Path</h3>
-        <span className="text-xs text-gray-500">{completedCount} / {totalCount} complete</span>
+        <h3 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Learning Path</h3>
+        <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>{completedCount} / {totalCount} complete</span>
       </div>
 
       <div className="relative">
-        <div className="absolute left-3.5 top-3 bottom-3 w-px bg-gray-800" />
+        <div className={`absolute left-3.5 top-3 bottom-3 w-px ${isDark ? 'bg-gray-800' : 'bg-gray-200'}`} />
         <div className="space-y-3">
           {topics.map((item, i) => (
             <div key={i} className="flex items-center gap-3 relative">
               <div
                 className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 z-10 border-2 transition-all"
                 style={{
-                  background: item.done ? '#6366f1' : item.current ? '#1e1b4b' : '#111827',
-                  borderColor: item.done ? '#6366f1' : item.current ? '#818cf8' : '#1f2937',
+                  background: item.done ? '#6366f1' : item.current ? (isDark ? '#1e1b4b' : '#eef2ff') : (isDark ? '#111827' : '#f9fafb'),
+                  borderColor: item.done ? '#6366f1' : item.current ? '#818cf8' : (isDark ? '#1f2937' : '#e5e7eb'),
                   boxShadow: item.current ? '0 0 12px rgba(99,102,241,0.4)' : 'none',
                 }}
               >
@@ -178,7 +201,7 @@ function LearningPath({ userId }: { userId: string }) {
                     <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 01.208 1.04l-5 7.5a.75.75 0 01-1.154.114l-3-3a.75.75 0 011.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 011.04-.207z" clipRule="evenodd" />
                   </svg>
                 ) : (
-                  <span className="text-[10px] font-bold" style={{ color: item.current ? '#818cf8' : '#374151' }}>
+                  <span className="text-[10px] font-bold" style={{ color: item.current ? '#818cf8' : (isDark ? '#374151' : '#9ca3af') }}>
                     {i + 1}
                   </span>
                 )}
@@ -186,7 +209,7 @@ function LearningPath({ userId }: { userId: string }) {
               <div className="flex-1 min-w-0">
                 <p
                   className="text-sm font-medium"
-                  style={{ color: item.done ? '#e0e7ff' : item.current ? '#a5b4fc' : '#4b5563' }}
+                  style={{ color: item.done ? (isDark ? '#e0e7ff' : '#4338ca') : item.current ? '#a5b4fc' : (isDark ? '#4b5563' : '#9ca3af') }}
                 >
                   {item.label}
                 </p>
@@ -214,14 +237,19 @@ function LearningPath({ userId }: { userId: string }) {
 // ── Recommended Problems ──────────────────────────────────────────
 
 function RecommendedProblems({ problems }: { problems: Problem[] }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const shown = problems.slice(0, 5);
   return (
     <div
       className="rounded-2xl border overflow-hidden"
-      style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}
+      style={{
+        background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.9)',
+        borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
+      }}
     >
-      <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-        <h3 className="text-sm font-semibold text-white">Recommended for You</h3>
+      <div className={`flex items-center justify-between px-5 py-4 border-b ${isDark ? 'border-white/5' : 'border-gray-100'}`}>
+        <h3 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Recommended for You</h3>
         <Link to="/problems" className="text-xs font-medium transition-colors" style={{ color: '#818cf8' }}>
           View all →
         </Link>
@@ -234,17 +262,19 @@ function RecommendedProblems({ problems }: { problems: Problem[] }) {
             <Link
               key={p.id}
               to={`/problems/${p.id}`}
-              className="flex items-center gap-4 px-5 py-3.5 border-b border-white/3 hover:bg-white/3 transition-colors group last:border-0"
+              className={`flex items-center gap-4 px-5 py-3.5 border-b transition-colors group last:border-0 ${
+                isDark ? 'border-white/3 hover:bg-white/3' : 'border-gray-100 hover:bg-gray-50'
+              }`}
             >
-              <span className="text-xs font-mono text-gray-700 w-5 shrink-0 group-hover:text-gray-500 transition-colors">
+              <span className={`text-xs font-mono w-5 shrink-0 transition-colors ${isDark ? 'text-gray-700 group-hover:text-gray-500' : 'text-gray-300 group-hover:text-gray-400'}`}>
                 {idx + 1}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors truncate">
+                <p className={`text-sm font-medium transition-colors truncate ${isDark ? 'text-gray-300 group-hover:text-white' : 'text-gray-700 group-hover:text-gray-900'}`}>
                   {p.title}
                 </p>
                 {p.companies.length > 0 && (
-                  <p className="text-[10px] text-gray-600 mt-0.5">
+                  <p className={`text-[10px] mt-0.5 ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>
                     {p.companies.slice(0, 2).join(', ')}
                     {p.companies.length > 2 && ` +${p.companies.length - 2}`}
                   </p>
@@ -270,6 +300,9 @@ const STATUS_CONFIG = {
 };
 
 function RecentActivity({ userId }: { userId: string }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const { data, isLoading } = useQuery({
     queryKey: ['user-submissions', userId, { page: 1, limit: 5 }],
     queryFn: () => getUserSubmissions(userId, { page: 1, limit: 5 }),
@@ -281,10 +314,13 @@ function RecentActivity({ userId }: { userId: string }) {
   return (
     <div
       className="rounded-2xl border overflow-hidden"
-      style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}
+      style={{
+        background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.9)',
+        borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
+      }}
     >
-      <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-        <h3 className="text-sm font-semibold text-white">Recent Submissions</h3>
+      <div className={`flex items-center justify-between px-5 py-4 border-b ${isDark ? 'border-white/5' : 'border-gray-100'}`}>
+        <h3 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Recent Submissions</h3>
         <Link to="/profile" className="text-xs font-medium" style={{ color: '#818cf8' }}>
           View all →
         </Link>
@@ -294,7 +330,7 @@ function RecentActivity({ userId }: { userId: string }) {
         <div className="flex justify-center py-10"><LoadingSpinner size="md" /></div>
       ) : submissions.length === 0 ? (
         <div className="py-10 text-center space-y-2">
-          <p className="text-sm text-gray-600">No submissions yet</p>
+          <p className={`text-sm ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>No submissions yet</p>
           <Link to="/problems" className="text-xs font-medium" style={{ color: '#818cf8' }}>
             Solve your first problem →
           </Link>
@@ -306,16 +342,18 @@ function RecentActivity({ userId }: { userId: string }) {
             return (
               <div
                 key={sub.id}
-                className="flex items-center gap-3 px-5 py-3 border-b border-white/3 last:border-0 hover:bg-white/2 transition-colors"
+                className={`flex items-center gap-3 px-5 py-3 border-b last:border-0 transition-colors ${
+                  isDark ? 'border-white/3 hover:bg-white/2' : 'border-gray-100 hover:bg-gray-50'
+                }`}
               >
                 <div className="flex-1 min-w-0">
                   <Link
                     to={`/problems/${sub.problemId}`}
-                    className="text-sm font-medium text-gray-400 hover:text-white transition-colors truncate block"
+                    className={`text-sm font-medium transition-colors truncate block ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                   >
                     {sub.problem?.title ?? sub.problemId}
                   </Link>
-                  <p className="text-[10px] text-gray-600 mt-0.5">{sub.language}</p>
+                  <p className={`text-[10px] mt-0.5 ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>{sub.language}</p>
                 </div>
                 <span
                   className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold"
@@ -335,6 +373,8 @@ function RecentActivity({ userId }: { userId: string }) {
 // ── Streak Widget ─────────────────────────────────────────────────
 
 function StreakWidget({ streak }: { streak: number }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const today = new Date().getDay();
   const activeDays = new Set<number>();
@@ -373,7 +413,7 @@ function StreakWidget({ streak }: { streak: number }) {
               style={{
                 background: activeDays.has(idx)
                   ? 'linear-gradient(90deg, #fb923c, #f97316)'
-                  : 'rgba(251,146,60,0.1)',
+                  : isDark ? 'rgba(251,146,60,0.1)' : 'rgba(251,146,60,0.15)',
                 boxShadow: activeDays.has(idx) ? '0 0 6px rgba(251,146,60,0.4)' : 'none',
               }}
             />
@@ -396,6 +436,9 @@ function getScoreColor(score: number): string {
 }
 
 function TopicStrength({ userId }: { userId: string }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const { data: topics = [] } = useQuery({
     queryKey: ['topic-strength', userId],
     queryFn: () => getTopicStrength(userId),
@@ -406,25 +449,28 @@ function TopicStrength({ userId }: { userId: string }) {
   return (
     <div
       className="rounded-2xl p-5 border"
-      style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}
+      style={{
+        background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.9)',
+        borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
+      }}
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-white">Topic Strength</h3>
-        <span className="text-[10px] text-gray-600">Focus on weak areas</span>
+        <h3 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Topic Strength</h3>
+        <span className={`text-[10px] ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>Focus on weak areas</span>
       </div>
       <div className="space-y-3.5">
         {topics.length === 0 ? (
-          <p className="text-xs text-gray-600 text-center py-4">No data yet — solve some problems!</p>
+          <p className={`text-xs text-center py-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>No data yet — solve some problems!</p>
         ) : (
           topics.map((t) => {
             const color = getScoreColor(t.score);
             return (
               <div key={t.label}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs text-gray-400">{t.label}</span>
+                  <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{t.label}</span>
                   <span className="text-xs font-bold" style={{ color }}>{t.score}%</span>
                 </div>
-                <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                <div className={`h-1.5 rounded-full overflow-hidden ${isDark ? 'bg-gray-800' : 'bg-gray-200'}`}>
                   <div
                     className="h-full rounded-full transition-all duration-700"
                     style={{ width: `${t.score}%`, background: color, boxShadow: `0 0 6px ${color}60` }}
@@ -442,12 +488,17 @@ function TopicStrength({ userId }: { userId: string }) {
 // ── Quick Actions ─────────────────────────────────────────────────
 
 function QuickActions() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   return (
     <div
       className="rounded-2xl p-5 border"
-      style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}
+      style={{
+        background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.9)',
+        borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
+      }}
     >
-      <h3 className="text-sm font-semibold text-white mb-4">Quick Actions</h3>
+      <h3 className={`text-sm font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Quick Actions</h3>
       <div className="space-y-2">
         {[
           { to: '/problems?difficulty=EASY', emoji: '🟢', label: 'Practice Easy', sub: 'Build confidence', color: '#22c55e' },
@@ -476,6 +527,8 @@ function QuickActions() {
 
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const { data: problemsData, isLoading: problemsLoading } = useQuery({
     queryKey: ['problems', { page: 1, limit: 10 }],
@@ -496,15 +549,18 @@ export function DashboardPage() {
   const level = stats?.level ?? 0;
 
   return (
-    <div className="h-full overflow-y-auto" style={{ background: '#060612' }}>
+    <div
+      className="h-full overflow-y-auto"
+      style={{ background: isDark ? '#060612' : '#f1f5f9' }}
+    >
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
               {greeting}, {user?.name?.split(' ')[0]}
             </h1>
-            <p className="text-sm text-gray-600 mt-0.5">{today}</p>
+            <p className={`text-sm mt-0.5 ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>{today}</p>
           </div>
           <div
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold"

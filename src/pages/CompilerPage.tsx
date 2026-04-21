@@ -30,7 +30,7 @@ export function CompilerPage() {
     setRunError(null);
 
     try {
-      const res = await runCode({ source_code: code, language_id: language.id });
+      const res = await runCode({ code, languageId: language.id });
       setResult(res);
       if (res.statusId === 3) {
         toast.success('Executed successfully');

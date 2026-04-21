@@ -82,9 +82,12 @@ body,
   padding: 0;
 }
 
-/* Monaco Editor overrides */
-.monaco-editor .margin {
+/* Monaco Editor overrides — match the editor's own background per theme */
+.dark .monaco-editor .margin {
   background-color: #1e1e1e !important;
+}
+.monaco-editor .margin {
+  background-color: #fffffe !important; /* Monaco 'light' theme margin color */
 }
 
 /* Light scrollbars for normal pages */

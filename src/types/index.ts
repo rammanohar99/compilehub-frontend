@@ -84,18 +84,18 @@ export interface Language {
 }
 
 export interface RunCodeRequest {
-  source_code: string;
-  language_id: number;
+  code: string;
+  languageId: number;
+  stdin?: string;
 }
 
 export interface RunCodeResponse {
   stdout: string | null;
   stderr: string | null;
-  compile_output: string | null;
-  message: string | null;
-  status: { id: number; description: string };
-  time: string | null;
-  memory: number | null;
+  compileOutput: string | null;
+  executionTime: number | null;
+  statusDescription: string;
+  statusId: number;
 }
 
 export interface ExecutionResult {

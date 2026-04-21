@@ -293,7 +293,7 @@ function OutputBlock({
 
 function EmptyState({ isDark }: { isDark: boolean }) {
   return (
-    <div className={`flex flex-col items-center justify-center h-full gap-3 select-none ${isDark ? 'text-[#585858]' : 'text-gray-300'}`}>
+    <div className={`flex flex-col items-center justify-center h-full gap-3 select-none ${isDark ? 'text-[#585858]' : 'text-gray-400'}`}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
@@ -309,8 +309,8 @@ function EmptyState({ isDark }: { isDark: boolean }) {
         />
       </svg>
       <div className="text-center">
-        <p className={`font-medium ${isDark ? 'text-[#858585]' : 'text-gray-400'}`}>No output yet</p>
-        <p className="text-xs mt-0.5">Run your code to see results here</p>
+        <p className={`font-medium ${isDark ? 'text-[#858585]' : 'text-gray-500'}`}>No output yet</p>
+        <p className={`text-xs mt-0.5 ${isDark ? 'text-[#585858]' : 'text-gray-400'}`}>Run your code to see results here</p>
       </div>
     </div>
   );

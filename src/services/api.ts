@@ -2,7 +2,7 @@ import api from "../api/axios";
 import type { ApiResponse, RunCodeRequest, RunCodeResponse, ExecutionResult } from "../types";
 
 export async function runCode(request: RunCodeRequest): Promise<ExecutionResult> {
-  const { data } = await api.post<ApiResponse<RunCodeResponse>>("/api/run", request);
+  const { data } = await api.post<ApiResponse<RunCodeResponse>>("/run", request);
   const result = data.data;
 
   // Backend doesn't return a numeric statusId — derive it from statusDescription

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 
 // Layout
@@ -32,8 +33,34 @@ import { SDSubmissionDetailPage } from './features/systemDesign/pages/Submission
 import { CreateQuestionPage } from './features/systemDesign/pages/CreateQuestionPage';
 import { EditQuestionPage } from './features/systemDesign/pages/EditQuestionPage';
 import { FundamentalsPage } from './features/engFundamentals/pages/FundamentalsPage';
+import { useAuthStore } from './store/authStore';
+import { PageLoader } from './components/LoadingSpinner';
 
 function AppShell() {
+  const bootstrapAuth = useAuthStore((s) => s.bootstrapAuth);
+  const isBootstrapping = useAuthStore((s) => s.isBootstrapping);
+  const clearAuth = useAuthStore((s) => s.clearAuth);
+
+  useEffect(() => {
+    void bootstrapAuth();
+  }, [bootstrapAuth]);
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (!event.key) return;
+      if (event.key !== 'token' && event.key !== 'refreshToken' && event.key !== 'user') return;
+      if (event.newValue !== null) return;
+      clearAuth();
+    };
+
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [clearAuth]);
+
+  if (isBootstrapping) {
+    return <PageLoader />;
+  }
+
   return (
     <BrowserRouter>
       <Toaster

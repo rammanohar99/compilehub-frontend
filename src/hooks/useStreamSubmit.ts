@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { getAccessToken } from '../services/tokenManager';
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? '/api';
 
@@ -55,7 +56,7 @@ export function useStreamSubmit() {
 
     setState({ testCases: [], status: 'running', result: null, error: null, isRunning: true });
 
-    const token = localStorage.getItem('token');
+    const token = getAccessToken();
 
     try {
       const res = await fetch(`${BASE_URL}/submit/stream`, {

@@ -8,8 +8,8 @@ export function Navbar() {
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     toast.success('Signed out successfully');
     navigate('/login');
   }

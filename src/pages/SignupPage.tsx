@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { signup } from '../api/auth';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -24,6 +24,7 @@ function validate(name: string, email: string, password: string): FormErrors {
 }
 
 export function SignupPage() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,6 +34,10 @@ export function SignupPage() {
 
   const authLogin = useAuthStore((s) => s.login);
   const navigate = useNavigate();
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,9 +49,9 @@ export function SignupPage() {
     setErrors({});
     setLoading(true);
     try {
-      const { token, user } = await signup({ name, email, password });
-      authLogin(token, user);
-      toast.success(`Account created! Welcome, ${user.name}!`);
+      const authData = await signup({ name, email, password });
+      authLogin(authData);
+      toast.success(`Account created! Welcome, ${authData.user.name}!`);
       navigate('/problems');
     } catch (err: unknown) {
       const msg = extractApiError(err) ?? 'Failed to create account';

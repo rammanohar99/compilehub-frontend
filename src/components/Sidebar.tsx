@@ -218,8 +218,8 @@ export function Sidebar() {
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     toast.success('Logged out');
     navigate('/login');
   }

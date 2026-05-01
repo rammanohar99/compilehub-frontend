@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 import { getUserSubmissions } from '../api/submissions';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import type { Submission, SubmissionStatus } from '../types';
+import { getSessions, revokeSession } from '../api/auth';
+import toast from 'react-hot-toast';
 
 const STATUS_BADGE: Record<SubmissionStatus, string> = {
   PASSED: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
@@ -18,6 +20,8 @@ const PAGE_LIMIT = 15;
 
 export function ProfilePage() {
   const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [filterProblemId, setFilterProblemId] = useState('');
 
@@ -35,6 +39,34 @@ export function ProfilePage() {
 
   const submissions = data?.submissions ?? [];
   const totalPages = data?.totalPages ?? 1;
+
+  const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
+    queryKey: ['auth-sessions'],
+    queryFn: getSessions,
+    staleTime: 30_000,
+  });
+  const sessions = normalizeSessions(sessionsData);
+
+  const revokeMutation = useMutation({
+    mutationFn: (sessionId: string) => revokeSession(sessionId),
+    onSuccess: () => {
+      toast.success('Session revoked');
+      void queryClient.invalidateQueries({ queryKey: ['auth-sessions'] });
+    },
+    onError: () => {
+      toast.error('Failed to revoke session');
+    },
+  });
+
+  const logoutAllMutation = useMutation({
+    mutationFn: async () => logout({ allSessions: true }),
+    onSuccess: () => {
+      toast.success('Logged out from all devices');
+    },
+    onError: () => {
+      toast.error('Failed to logout all devices');
+    },
+  });
 
   // Compute stats from ALL submissions fetched so far (page 1 data)
   const total = data?.total ?? 0;
@@ -174,6 +206,49 @@ export function ProfilePage() {
             </>
           )}
         </div>
+
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-3 flex-wrap">
+            <h2 className="font-semibold text-gray-900 dark:text-white">Active Sessions</h2>
+            <button
+              onClick={() => logoutAllMutation.mutate()}
+              disabled={logoutAllMutation.isPending}
+              className="px-3 py-1.5 text-sm rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
+            >
+              Logout all devices
+            </button>
+          </div>
+
+          {sessionsLoading ? (
+            <div className="flex justify-center py-10">
+              <LoadingSpinner size="md" />
+            </div>
+          ) : sessions.length === 0 ? (
+            <div className="px-5 py-10 text-sm text-gray-500 dark:text-gray-400">No active sessions found.</div>
+          ) : (
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              {sessions.map((session) => (
+                <div key={session.id} className="px-5 py-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+                      {session.current ? 'Current device' : session.userAgent || 'Unknown device'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Created: {new Date(session.createdAt).toLocaleString()} | Expires: {new Date(session.expiresAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => revokeMutation.mutate(session.id)}
+                    disabled={revokeMutation.isPending || Boolean(session.current)}
+                    className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                  >
+                    Revoke
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -218,3 +293,18 @@ function formatRelative(iso: string): string {
   }
 }
 
+function normalizeSessions(value: unknown): Array<{
+  id: string;
+  createdAt: string;
+  expiresAt: string;
+  current?: boolean;
+  userAgent?: string;
+}> {
+  if (Array.isArray(value)) return value as Array<{ id: string; createdAt: string; expiresAt: string; current?: boolean; userAgent?: string }>;
+  if (value && typeof value === 'object') {
+    const asObj = value as { sessions?: unknown; data?: unknown };
+    if (Array.isArray(asObj.sessions)) return asObj.sessions as Array<{ id: string; createdAt: string; expiresAt: string; current?: boolean; userAgent?: string }>;
+    if (Array.isArray(asObj.data)) return asObj.data as Array<{ id: string; createdAt: string; expiresAt: string; current?: boolean; userAgent?: string }>;
+  }
+  return [];
+}

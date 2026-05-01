@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { login } from '../api/auth';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -19,6 +19,7 @@ function validate(email: string, password: string): FormErrors {
 }
 
 export function LoginPage() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
@@ -30,6 +31,10 @@ export function LoginPage() {
   const location = useLocation();
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? '/dashboard';
 
+  if (isAuthenticated) {
+    return <Navigate to={from} replace />;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const fieldErrors = validate(email, password);
@@ -40,9 +45,9 @@ export function LoginPage() {
     setErrors({});
     setLoading(true);
     try {
-      const { token, user } = await login({ email, password });
-      authLogin(token, user);
-      toast.success(`Welcome back, ${user.name}!`);
+      const authData = await login({ email, password });
+      authLogin(authData);
+      toast.success(`Welcome back, ${authData.user.name}!`);
       navigate(from, { replace: true });
     } catch (err: unknown) {
       const msg = extractApiError(err) ?? 'Invalid email or password';

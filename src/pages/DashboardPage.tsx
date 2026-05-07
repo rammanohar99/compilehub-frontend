@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState, useRef } from 'react';
+import React from 'react';
+import { createPortal } from 'react-dom';
 import { useAuthStore } from '../store/authStore';
 import { useTheme } from '../hooks/useTheme';
 import { getProblems } from '../api/problems';
@@ -72,22 +75,99 @@ const LEVEL_COLORS_LIGHT = [
   'bg-indigo-600',
 ];
 
-/** Map { date → count } to a 364-slot index array (0 = 364 days ago, 363 = today). */
+/** Format a local Date as "YYYY-MM-DD" without UTC conversion. */
+function toLocalDateKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/** Map { date → count } to a 364-slot index array (index 0 = 363 days ago, index 363 = today). */
 function buildHeatmapArray(activity: { date: string; count: number }[]): number[] {
   const map: Record<string, number> = {};
   for (const e of activity) map[e.date] = e.count;
 
   const data: number[] = [];
   const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
 
   for (let i = 363; i >= 0; i--) {
     const d = new Date(today.getTime() - i * 86_400_000);
-    const key = d.toISOString().split('T')[0];
+    const key = toLocalDateKey(d);
     const count = map[key] ?? 0;
     data.push(count === 0 ? 0 : count === 1 ? 1 : count <= 3 ? 2 : count <= 5 ? 3 : 4);
   }
   return data;
+}
+
+// ── Heatmap Cell with GitHub-style tooltip ────────────────────────
+
+interface HeatmapCellProps {
+  dateKey: string;
+  count: number;
+  colorClass: string;
+}
+
+function HeatmapCell({ dateKey, count, colorClass }: HeatmapCellProps) {
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const cellRef = useRef<HTMLDivElement>(null);
+
+  const label = count === 0
+    ? `No contributions on ${formatTooltipDate(dateKey)}`
+    : `${count} contribution${count !== 1 ? 's' : ''} on ${formatTooltipDate(dateKey)}`;
+
+  function handleMouseEnter() {
+    if (!cellRef.current) return;
+    const r = cellRef.current.getBoundingClientRect();
+    setPos({ x: r.left + r.width / 2, y: r.top });
+  }
+
+  return (
+    <div
+      ref={cellRef}
+      className={`w-2.5 h-2.5 rounded-sm ${colorClass} hover:ring-1 hover:ring-indigo-400/50 transition-all cursor-pointer`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={() => setPos(null)}
+    >
+      {pos && createPortal(
+        <div
+          className="pointer-events-none fixed z-[9999]"
+          style={{ left: pos.x, top: pos.y - 6, transform: 'translate(-50%, -100%)' }}
+        >
+          <div
+            className="whitespace-nowrap rounded-md px-2.5 py-1.5 text-[11px] font-medium shadow-lg"
+            style={{
+              background: 'rgba(15,15,25,0.95)',
+              color: '#e2e8f0',
+              border: '1px solid rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            {label}
+          </div>
+          <div
+            className="absolute left-1/2 -translate-x-1/2"
+            style={{
+              top: '100%',
+              width: 0,
+              height: 0,
+              borderLeft: '5px solid transparent',
+              borderRight: '5px solid transparent',
+              borderTop: '5px solid rgba(15,15,25,0.95)',
+            }}
+          />
+        </div>,
+        document.body,
+      )}
+    </div>
+  );
+}
+
+function formatTooltipDate(dateKey: string): string {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function ActivityHeatmap({ userId }: { userId: string }) {
@@ -95,31 +175,54 @@ function ActivityHeatmap({ userId }: { userId: string }) {
   const isDark = theme === 'dark';
   const LEVEL_COLORS = isDark ? LEVEL_COLORS_DARK : LEVEL_COLORS_LIGHT;
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const from = new Date(today.getTime() - 363 * 86_400_000);
+  const fromStr = toLocalDateKey(from);
+  const toStr = toLocalDateKey(today);
+
   const { data: activity = [] } = useQuery({
-    queryKey: ['user-activity', userId],
-    queryFn: () => getUserActivity(userId),
+    queryKey: ['user-activity', userId, fromStr, toStr],
+    queryFn: () => getUserActivity(userId, fromStr, toStr),
     staleTime: 60_000,
     enabled: Boolean(userId),
   });
 
+  const activityMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const e of activity) map[e.date] = e.count;
+    return map;
+  }, [activity]);
+
   const heatmapData = buildHeatmapArray(activity);
 
+  // Build week columns and track where each month label should appear
   const weeks = [];
+  const monthLabels: { weekIdx: number; label: string }[] = [];
+  let lastMonth = -1;
+
   for (let w = 0; w < 52; w++) {
     const days = [];
     for (let d = 0; d < 7; d++) {
       const idx = w * 7 + d;
       const level = heatmapData[idx] ?? 0;
+      const cellDate = new Date(today.getTime() - (363 - idx) * 86_400_000);
+      const dateKey = toLocalDateKey(cellDate);
+      const count = activityMap[dateKey] ?? 0;
+      // Track month change on first day of week
+      if (d === 0) {
+        const month = cellDate.getMonth();
+        if (month !== lastMonth) {
+          monthLabels.push({ weekIdx: w, label: MONTHS[month] });
+          lastMonth = month;
+        }
+      }
       days.push(
-        <div
+        <HeatmapCell
           key={d}
-          className={`w-2.5 h-2.5 rounded-sm ${LEVEL_COLORS[level]} hover:ring-1 hover:ring-indigo-400/50 transition-all cursor-pointer`}
-          title={`${activity.find((a) => {
-            const today = new Date();
-            today.setUTCHours(0, 0, 0, 0);
-            const date = new Date(today.getTime() - (363 - idx) * 86_400_000);
-            return a.date === date.toISOString().split('T')[0];
-          })?.count ?? 0} contributions`}
+          dateKey={dateKey}
+          count={count}
+          colorClass={LEVEL_COLORS[level]}
         />
       );
     }
@@ -144,9 +247,16 @@ function ActivityHeatmap({ userId }: { userId: string }) {
           <span className={`text-xs ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>More</span>
         </div>
       </div>
-      <div className="flex gap-1 mb-1 pl-0 overflow-hidden">
-        {MONTHS.map((m, i) => (
-          <div key={i} className={`text-[9px] flex-1 ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>{m}</div>
+      {/* Month labels positioned over the correct week columns */}
+      <div className="relative flex gap-1 mb-1" style={{ height: '12px' }}>
+        {monthLabels.map(({ weekIdx, label }) => (
+          <span
+            key={label + weekIdx}
+            className={`absolute text-[9px] ${isDark ? 'text-gray-600' : 'text-gray-400'}`}
+            style={{ left: `${weekIdx * (10 + 4)}px` }}
+          >
+            {label}
+          </span>
         ))}
       </div>
       <div className="flex gap-1 overflow-x-auto pb-1">{weeks}</div>

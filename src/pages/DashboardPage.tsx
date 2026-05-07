@@ -7,6 +7,7 @@ import { getUserSubmissions } from '../api/submissions';
 import { getUserStats, getUserActivity, getTopicStrength, getLearningPath } from '../api/users';
 import { DifficultyBadge } from '../components/DifficultyBadge';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { AssessmentDashboardWidgets } from '../features/assessments/components/AssessmentDashboardWidgets';
 import type { Problem, Difficulty } from '../types';
 
 // ── Glassmorphism stat card ───────────────────────────────────────
@@ -576,7 +577,7 @@ export function DashboardPage() {
         </div>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           <StatCard
             label="Problems Solved"
             value={stats?.problemsSolved ?? '—'}
@@ -598,6 +599,30 @@ export function DashboardPage() {
             icon={
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4.5 h-4.5">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+              </svg>
+            }
+          />
+          <StatCard
+            label="Assessments Done"
+            value={stats?.assessmentsCompleted ?? '—'}
+            sub={stats?.averageAssessmentAccuracy != null ? `${stats.averageAssessmentAccuracy.toFixed(0)}% avg accuracy` : undefined}
+            gradient="linear-gradient(135deg, #3b82f6, #2563eb)"
+            glowColor="#3b82f6"
+            icon={
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4.5 h-4.5">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+              </svg>
+            }
+          />
+          <StatCard
+            label="Avg Accuracy"
+            value={stats?.averageAssessmentAccuracy != null ? `${stats.averageAssessmentAccuracy.toFixed(0)}%` : '—'}
+            sub="across assessments"
+            gradient="linear-gradient(135deg, #8b5cf6, #7c3aed)"
+            glowColor="#8b5cf6"
+            icon={
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" className="w-4.5 h-4.5">
+                <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 001.5 1.5h1a1.5 1.5 0 001.5-1.5v-13A1.5 1.5 0 0016.5 2h-1zM9.5 6A1.5 1.5 0 008 7.5v9A1.5 1.5 0 009.5 18h1a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0010.5 6h-1zM3.5 10A1.5 1.5 0 002 11.5v5A1.5 1.5 0 003.5 18h1A1.5 1.5 0 006 16.5v-5A1.5 1.5 0 004.5 10h-1z" />
               </svg>
             }
           />
@@ -624,6 +649,7 @@ export function DashboardPage() {
           {/* Left: 2 cols */}
           <div className="lg:col-span-2 space-y-5">
             {user?.id && <ActivityHeatmap userId={user.id} />}
+            <AssessmentDashboardWidgets />
             {user?.id && <LearningPath userId={user.id} />}
 
             {problemsLoading ? (

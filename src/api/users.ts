@@ -14,6 +14,8 @@ export interface UserStats {
   totalSubmissions: number;
   acceptanceRate: number;
   sdAnswersSubmitted: number;
+  assessmentsCompleted: number;
+  averageAssessmentAccuracy: number;
 }
 
 export interface ActivityEntry {

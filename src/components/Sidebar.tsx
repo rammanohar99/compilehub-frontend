@@ -27,7 +27,6 @@ const PRACTICE_ITEMS: NavItem[] = [
   {
     to: '/problems',
     label: 'Problems',
-    badge: 'HOT',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
         <path fillRule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5A.75.75 0 012 10z" clipRule="evenodd" />
@@ -35,9 +34,17 @@ const PRACTICE_ITEMS: NavItem[] = [
     ),
   },
   {
+    to: '/assessments',
+    label: 'Assessments',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+      </svg>
+    ),
+  },
+  {
     to: '/system-design',
     label: 'System Design',
-    badge: 'NEW',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
         <path fillRule="evenodd" d="M1 2.75A.75.75 0 011.75 2h10.5a.75.75 0 010 1.5H12v13.75a.75.75 0 01-1.5 0V3.5h-9A.75.75 0 011 2.75zM15.5 6A.75.75 0 0116.25 6h1.5a.75.75 0 010 1.5h-.75v8.75a.75.75 0 01-1.5 0V7.5h-.75A.75.75 0 0115.5 6zM3 6.75A.75.75 0 013.75 6h4.5a.75.75 0 010 1.5H8v9.25a.75.75 0 01-1.5 0V7.5h-.75A.75.75 0 013 6.75z" clipRule="evenodd" />
@@ -47,7 +54,6 @@ const PRACTICE_ITEMS: NavItem[] = [
   {
     to: '/fundamentals',
     label: 'Fundamentals',
-    badge: 'NEW',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
         <path d="M10.75 16.82A7.462 7.462 0 0115 15.5c.71 0 1.396.098 2.046.282A.75.75 0 0018 15.06v-11a.75.75 0 00-.546-.721A9.006 9.006 0 0015 3a8.963 8.963 0 00-4.25 1.065V16.82zM9.25 4.065A8.963 8.963 0 005 3c-.85 0-1.673.118-2.454.339A.75.75 0 002 4.06v11a.75.75 0 00.954.721A7.506 7.506 0 015 15.5c1.579 0 3.042.487 4.25 1.32V4.065z" />

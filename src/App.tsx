@@ -33,6 +33,17 @@ import { SDSubmissionDetailPage } from './features/systemDesign/pages/Submission
 import { CreateQuestionPage } from './features/systemDesign/pages/CreateQuestionPage';
 import { EditQuestionPage } from './features/systemDesign/pages/EditQuestionPage';
 import { FundamentalsPage } from './features/engFundamentals/pages/FundamentalsPage';
+
+// Assessments
+import { AssessmentLayout } from './features/assessments/components/AssessmentLayout';
+import { Suspense, lazy } from 'react';
+
+const AssessmentListPage = lazy(() => import('./features/assessments/pages/AssessmentListPage').then(m => ({ default: m.AssessmentListPage })));
+const AssessmentDetailPage = lazy(() => import('./features/assessments/pages/AssessmentDetailPage').then(m => ({ default: m.AssessmentDetailPage })));
+const AssessmentEnginePage = lazy(() => import('./features/assessments/pages/AssessmentEnginePage').then(m => ({ default: m.AssessmentEnginePage })));
+const AssessmentResultsPage = lazy(() => import('./features/assessments/pages/AssessmentResultsPage').then(m => ({ default: m.AssessmentResultsPage })));
+const AssessmentAnalyticsPage = lazy(() => import('./features/assessments/pages/index').then(m => ({ default: m.AssessmentAnalyticsPage })));
+
 import { useAuthStore } from './store/authStore';
 import { PageLoader } from './components/LoadingSpinner';
 
@@ -100,6 +111,17 @@ function AppShell() {
             <Route path="/system-design/submissions" element={<SubmissionsPage />} />
             <Route path="/system-design/submissions/:id" element={<SDSubmissionDetailPage />} />
             <Route path="/system-design/:id" element={<QuestionDetailPage />} />
+
+            {/* Assessments (standard layout) */}
+            <Route path="/assessments" element={<Suspense fallback={<PageLoader />}><AssessmentListPage /></Suspense>} />
+            <Route path="/assessments/analytics" element={<Suspense fallback={<PageLoader />}><AssessmentAnalyticsPage /></Suspense>} />
+            <Route path="/assessments/:slug" element={<Suspense fallback={<PageLoader />}><AssessmentDetailPage /></Suspense>} />
+          </Route>
+
+          {/* Assessment Engine (no sidebar, special layout) */}
+          <Route element={<AssessmentLayout />}>
+            <Route path="/assessments/attempt/:id" element={<Suspense fallback={<PageLoader />}><AssessmentEnginePage /></Suspense>} />
+            <Route path="/assessments/results/:id" element={<Suspense fallback={<PageLoader />}><AssessmentResultsPage /></Suspense>} />
           </Route>
         </Route>
 

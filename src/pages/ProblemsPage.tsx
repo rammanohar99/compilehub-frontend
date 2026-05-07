@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getProblems } from '../api/problems';
 import { DifficultyBadge } from '../components/DifficultyBadge';
-import { LoadingSpinner } from '../components/LoadingSpinner';
+import { useTheme } from '../hooks/useTheme';
 import type { Difficulty, Problem } from '../types';
 
-const DIFFICULTIES: { value: string; label: string }[] = [
+const DIFFICULTIES = [
   { value: '', label: 'All Difficulties' },
   { value: 'EASY', label: 'Easy' },
   { value: 'MEDIUM', label: 'Medium' },
@@ -15,68 +15,130 @@ const DIFFICULTIES: { value: string; label: string }[] = [
 
 const PAGE_LIMIT = 10;
 
+function toTitleCase(str: string) {
+  return str.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+}
+
 export function ProblemsPage() {
   const navigate = useNavigate();
-  const [difficulty, setDifficulty] = useState('');
-  const [companyInput, setCompanyInput] = useState('');
-  const [tagInput, setTagInput] = useState('');
-  const [company, setCompany] = useState('');
-  const [tag, setTag] = useState('');
-  const [page, setPage] = useState(1);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Debounce text filter inputs so we don't fire a query on every keystroke
-  // Capitalize first letter of each word to match DB casing (e.g. "google" → "Google")
-  function toTitleCase(str: string) {
-    return str.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
-  }
+  const page = Number(searchParams.get('page') ?? '1');
+  const difficulty = searchParams.get('difficulty') ?? '';
+  const companyFromUrl = searchParams.get('company') ?? '';
+  const tagFromUrl = searchParams.get('tag') ?? '';
+
+  const [companyInput, setCompanyInput] = useState(companyFromUrl);
+  const [tagInput, setTagInput] = useState(tagFromUrl);
+  const isMounted = useRef(false);
 
   useEffect(() => {
+    if (!isMounted.current) { isMounted.current = true; return; }
     const timer = setTimeout(() => {
-      setCompany(companyInput.trim() ? toTitleCase(companyInput.trim()) : '');
-      setPage(1);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        const val = companyInput.trim() ? toTitleCase(companyInput.trim()) : '';
+        if (val) next.set('company', val); else next.delete('company');
+        next.delete('page');
+        return next;
+      }, { replace: true });
     }, 400);
     return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyInput]);
 
   useEffect(() => {
+    if (!isMounted.current) return;
     const timer = setTimeout(() => {
-      setTag(tagInput.trim() ? toTitleCase(tagInput.trim()) : '');
-      setPage(1);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        const val = tagInput.trim() ? toTitleCase(tagInput.trim()) : '';
+        if (val) next.set('tag', val); else next.delete('tag');
+        next.delete('page');
+        return next;
+      }, { replace: true });
     }, 400);
     return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tagInput]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['problems', { difficulty, company, tag, page }],
-    queryFn: () =>
-      getProblems({ difficulty: difficulty || undefined, company: company || undefined, tag: tag || undefined, page, limit: PAGE_LIMIT }),
+    queryKey: ['problems', { difficulty, company: companyFromUrl, tag: tagFromUrl, page }],
+    queryFn: () => getProblems({
+      difficulty: difficulty || undefined,
+      company: companyFromUrl || undefined,
+      tag: tagFromUrl || undefined,
+      page,
+      limit: PAGE_LIMIT,
+    }),
     placeholderData: (prev) => prev,
   });
 
   const problems = data?.problems ?? [];
   const totalPages = data?.totalPages ?? 1;
-  // Use values from the response so row numbers always match the displayed data,
-  // even while placeholderData is showing stale results during a page transition.
   const dataPage = data?.page ?? page;
   const dataLimit = data?.limit ?? PAGE_LIMIT;
 
+  function setPage(n: number) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (n <= 1) next.delete('page'); else next.set('page', String(n));
+      return next;
+    }, { replace: true });
+  }
+
+  function setDifficulty(value: string) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value) next.set('difficulty', value); else next.delete('difficulty');
+      next.delete('page');
+      return next;
+    }, { replace: true });
+  }
+
+  function clearFilters() {
+    setCompanyInput('');
+    setTagInput('');
+    setSearchParams({}, { replace: true });
+  }
+
+  const hasFilters = Boolean(difficulty || companyFromUrl || tagFromUrl);
+
   return (
-    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-950">
+    <div
+      className="h-full overflow-y-auto"
+      style={{ background: isDark ? '#060612' : '#f1f5f9' }}
+    >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Problems</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {data?.total != null ? `${data.total} problems` : 'Practice coding problems'}
-          </p>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Problems</h1>
+            <p className={`text-sm mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+              {data?.total != null ? `${data.total} problems` : 'Practice coding problems'}
+            </p>
+          </div>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-3 mb-6">
+        <div
+          className="flex flex-wrap gap-3 mb-6 p-4 rounded-2xl border"
+          style={{
+            background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.9)',
+            borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
+          }}
+        >
           <select
             value={difficulty}
-            onChange={(e) => { setDifficulty(e.target.value); setPage(1); }}
-            className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            onChange={(e) => setDifficulty(e.target.value)}
+            className={`px-3 py-2 text-sm rounded-xl border outline-none transition-colors ${
+              isDark
+                ? 'bg-gray-800/60 border-gray-700/50 text-gray-200 focus:border-indigo-500/50'
+                : 'bg-gray-50 border-gray-200 text-gray-800 focus:border-indigo-400'
+            }`}
           >
             {DIFFICULTIES.map((d) => (
               <option key={d.value} value={d.value}>{d.label}</option>
@@ -87,22 +149,34 @@ export function ProblemsPage() {
             type="text"
             value={companyInput}
             onChange={(e) => setCompanyInput(e.target.value)}
-            placeholder="e.g. Google, Amazon..."
-            className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors w-44"
+            placeholder="Company (e.g. Google)"
+            className={`px-3 py-2 text-sm rounded-xl border outline-none transition-colors w-44 ${
+              isDark
+                ? 'bg-gray-800/60 border-gray-700/50 text-gray-200 placeholder-gray-600 focus:border-indigo-500/50'
+                : 'bg-gray-50 border-gray-200 text-gray-800 placeholder-gray-400 focus:border-indigo-400'
+            }`}
           />
 
           <input
             type="text"
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
-            placeholder="e.g. array, graph..."
-            className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors w-44"
+            placeholder="Tag (e.g. Array)"
+            className={`px-3 py-2 text-sm rounded-xl border outline-none transition-colors w-44 ${
+              isDark
+                ? 'bg-gray-800/60 border-gray-700/50 text-gray-200 placeholder-gray-600 focus:border-indigo-500/50'
+                : 'bg-gray-50 border-gray-200 text-gray-800 placeholder-gray-400 focus:border-indigo-400'
+            }`}
           />
 
-          {(difficulty || companyInput || tagInput) && (
+          {hasFilters && (
             <button
-              onClick={() => { setDifficulty(''); setCompanyInput(''); setTagInput(''); setCompany(''); setTag(''); setPage(1); }}
-              className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              onClick={clearFilters}
+              className={`px-3 py-2 text-sm rounded-xl border transition-colors ${
+                isDark
+                  ? 'border-gray-700/50 text-gray-400 hover:bg-gray-800/60 hover:text-gray-200'
+                  : 'border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+              }`}
             >
               Clear filters
             </button>
@@ -110,77 +184,106 @@ export function ProblemsPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+        <div
+          className="rounded-2xl border overflow-hidden"
+          style={{
+            background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.9)',
+            borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
+          }}
+        >
           {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <LoadingSpinner size="lg" />
-            </div>
+            <TableSkeleton />
           ) : isError ? (
-            <div className="text-center py-20 text-gray-500 dark:text-gray-400">
-              <p className="text-base font-medium">Failed to load problems</p>
-              <p className="text-sm mt-1">Make sure the backend is running at localhost:5000</p>
-            </div>
+            <EmptyState message="Failed to load problems" sub="Make sure the backend is running" />
           ) : problems.length === 0 ? (
-            <div className="text-center py-20 text-gray-500 dark:text-gray-400">
-              <p className="text-base font-medium">No problems found</p>
-              <p className="text-sm mt-1">Try adjusting your filters</p>
-            </div>
+            <EmptyState message="No problems found" sub={hasFilters ? 'Try adjusting your filters' : 'No problems yet'} />
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-12">#</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">Difficulty</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Tags</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">Companies</th>
+                <tr
+                  className="border-b text-[10px] font-bold uppercase tracking-[0.1em]"
+                  style={{
+                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+                    color: isDark ? '#4b5563' : '#9ca3af',
+                    background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.02)',
+                  }}
+                >
+                  <th className="text-left px-5 py-3.5 w-12">#</th>
+                  <th className="text-left px-5 py-3.5">Title</th>
+                  <th className="text-left px-5 py-3.5 w-28">Difficulty</th>
+                  <th className="text-left px-5 py-3.5 hidden md:table-cell">Tags</th>
+                  <th className="text-left px-5 py-3.5 hidden lg:table-cell">Companies</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              <tbody>
                 {problems.map((problem: Problem, idx: number) => (
                   <tr
                     key={problem.id}
                     onClick={() => navigate(`/problems/${problem.id}`)}
-                    className="cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group"
+                    className="cursor-pointer group transition-colors border-b last:border-0"
+                    style={{
+                      borderColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)',
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = isDark
+                        ? 'rgba(99,102,241,0.04)'
+                        : 'rgba(99,102,241,0.03)';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = 'transparent';
+                    }}
                   >
-                    <td className="px-4 py-3.5 text-sm text-gray-400 dark:text-gray-500 font-mono">
+                    <td className={`px-5 py-4 text-xs font-mono ${isDark ? 'text-gray-700' : 'text-gray-300'}`}>
                       {(dataPage - 1) * dataLimit + idx + 1}
                     </td>
-                    <td className="px-4 py-3.5">
-                      <span className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <td className="px-5 py-4">
+                      <span className={`text-sm font-medium transition-colors ${isDark ? 'text-gray-300 group-hover:text-white' : 'text-gray-700 group-hover:text-gray-900'}`}>
                         {problem.title}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5">
+                    <td className="px-5 py-4">
                       <DifficultyBadge difficulty={problem.difficulty as Difficulty} />
                     </td>
-                    <td className="px-4 py-3.5 hidden md:table-cell">
+                    <td className="px-5 py-4 hidden md:table-cell">
                       <div className="flex flex-wrap gap-1">
                         {problem.tags.slice(0, 3).map((tag) => (
                           <span
                             key={tag}
-                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                            className="px-2 py-0.5 rounded-full text-[10px] font-medium"
+                            style={{
+                              background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                              color: isDark ? '#9ca3af' : '#6b7280',
+                            }}
                           >
                             {tag}
                           </span>
                         ))}
                         {problem.tags.length > 3 && (
-                          <span className="text-xs text-gray-400">+{problem.tags.length - 3}</span>
+                          <span className={`text-[10px] ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>
+                            +{problem.tags.length - 3}
+                          </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3.5 hidden lg:table-cell">
+                    <td className="px-5 py-4 hidden lg:table-cell">
                       <div className="flex flex-wrap gap-1">
                         {problem.companies.slice(0, 2).map((c) => (
                           <span
                             key={c}
-                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                            className="px-2 py-0.5 rounded-full text-[10px] font-medium"
+                            style={{
+                              background: 'rgba(99,102,241,0.1)',
+                              color: '#818cf8',
+                              border: '1px solid rgba(99,102,241,0.15)',
+                            }}
                           >
                             {c}
                           </span>
                         ))}
                         {problem.companies.length > 2 && (
-                          <span className="text-xs text-gray-400">+{problem.companies.length - 2}</span>
+                          <span className={`text-[10px] ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>
+                            +{problem.companies.length - 2}
+                          </span>
                         )}
                       </div>
                     </td>
@@ -192,23 +295,31 @@ export function ProblemsPage() {
         </div>
 
         {/* Pagination */}
-        {data && totalPages >= 1 && (
+        {!isLoading && totalPages > 1 && (
           <div className="flex items-center justify-between mt-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className={`text-xs ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>
               Page {page} of {totalPages}
             </p>
             <div className="flex gap-2">
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className={`px-4 py-2 text-sm rounded-xl border font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+                  isDark
+                    ? 'border-gray-700/50 text-gray-400 hover:bg-gray-800/60 hover:text-gray-200'
+                    : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+                }`}
               >
                 Previous
               </button>
               <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className={`px-4 py-2 text-sm rounded-xl border font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+                  isDark
+                    ? 'border-gray-700/50 text-gray-400 hover:bg-gray-800/60 hover:text-gray-200'
+                    : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+                }`}
               >
                 Next
               </button>
@@ -216,6 +327,30 @@ export function ProblemsPage() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function TableSkeleton() {
+  return (
+    <div className="p-5 space-y-3">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="flex gap-4 items-center animate-pulse">
+          <div className="w-6 h-3 rounded bg-gray-200 dark:bg-gray-800" />
+          <div className="flex-1 h-3 rounded bg-gray-200 dark:bg-gray-800" />
+          <div className="w-16 h-5 rounded-full bg-gray-200 dark:bg-gray-800" />
+          <div className="w-24 h-3 rounded bg-gray-200 dark:bg-gray-800 hidden md:block" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EmptyState({ message, sub }: { message: string; sub: string }) {
+  return (
+    <div className="py-20 text-center">
+      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{message}</p>
+      <p className="text-xs mt-1 text-gray-400 dark:text-gray-600">{sub}</p>
     </div>
   );
 }

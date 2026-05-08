@@ -83,6 +83,20 @@ export const AssessmentEnginePage: React.FC = () => {
     }
   }, [attempt, startAttempt]);
 
+  // Replace the ugly ID-based URL with a readable slug once we have the title
+  useEffect(() => {
+    const title = activeAttempt?.assessment?.title;
+    if (!title || !routeAttemptId) return;
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    const cleanUrl = `/assessments/attempt/${slug}`;
+    if (window.location.pathname !== cleanUrl) {
+      window.history.replaceState(null, '', cleanUrl);
+    }
+  }, [activeAttempt?.assessment?.title, routeAttemptId]);
+
   useEffect(() => {
     if (!activeAttempt || !routeAttemptId) return;
     if (activeAttempt.id === routeAttemptId && activeAttempt.status === 'COMPLETED') {

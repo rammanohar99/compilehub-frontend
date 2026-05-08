@@ -94,13 +94,14 @@ const TOOLS_ITEMS: NavItem[] = [
 
 // ── Nav link ──────────────────────────────────────────────────────
 
-function NavItem({ item }: { item: NavItem }) {
+function NavItem({ item, onClose }: { item: NavItem; onClose?: () => void }) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
   return (
     <NavLink
       to={item.to}
+      onClick={onClose}
       className={({ isActive }) =>
         `group flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 relative ${
           isActive
@@ -219,7 +220,12 @@ function XPDisplay() {
 
 // ── Sidebar ───────────────────────────────────────────────────────
 
-export function Sidebar() {
+interface SidebarProps {
+  open?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ open = false, onClose }: SidebarProps) {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
@@ -231,21 +237,35 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-60 shrink-0 flex flex-col h-screen bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800">
+    <aside className={`
+      w-60 shrink-0 flex flex-col h-screen bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800
+      fixed lg:relative z-30 transition-transform duration-300
+      ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+    `}>
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-5 h-14 border-b border-gray-200 dark:border-gray-800 shrink-0">
-        <div
-          className="flex items-center justify-center w-8 h-8 rounded-xl shrink-0"
-          style={{
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            boxShadow: '0 0 16px rgba(99,102,241,0.4)',
-          }}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-white">
-            <path fillRule="evenodd" d="M6.28 5.22a.75.75 0 010 1.06L2.56 10l3.72 3.72a.75.75 0 01-1.06 1.06L.97 10.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0zm7.44 0a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06L17.44 10l-3.72-3.72a.75.75 0 010-1.06zM11.377 2.011a.75.75 0 01.612.867l-2.5 14.5a.75.75 0 01-1.478-.255l2.5-14.5a.75.75 0 01.866-.612z" clipRule="evenodd" />
-          </svg>
+      <div className="flex items-center justify-between gap-2.5 px-5 h-14 border-b border-gray-200 dark:border-gray-800 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div
+            className="flex items-center justify-center w-8 h-8 rounded-xl shrink-0"
+            style={{
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              boxShadow: '0 0 16px rgba(99,102,241,0.4)',
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-white">
+              <path fillRule="evenodd" d="M6.28 5.22a.75.75 0 010 1.06L2.56 10l3.72 3.72a.75.75 0 01-1.06 1.06L.97 10.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0zm7.44 0a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06L17.44 10l-3.72-3.72a.75.75 0 010-1.06zM11.377 2.011a.75.75 0 01.612.867l-2.5 14.5a.75.75 0 01-1.478-.255l2.5-14.5a.75.75 0 01.866-.612z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <span className="font-bold text-gray-900 dark:text-white text-base tracking-tight">CompileHub</span>
         </div>
-        <span className="font-bold text-gray-900 dark:text-white text-base tracking-tight">CompileHub</span>
+        <button
+          onClick={onClose}
+          className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+            <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+          </svg>
+        </button>
       </div>
 
       {/* Nav */}
@@ -254,7 +274,7 @@ export function Sidebar() {
         <div className="space-y-0.5">
           <SectionLabel label="Practice" />
           {PRACTICE_ITEMS.map((item) => (
-            <NavItem key={item.to} item={item} />
+            <NavItem key={item.to} item={item} onClose={onClose} />
           ))}
         </div>
 
@@ -262,7 +282,7 @@ export function Sidebar() {
         <div className="space-y-0.5">
           <SectionLabel label="Tools" />
           {TOOLS_ITEMS.map((item) => (
-            <NavItem key={item.to} item={item} />
+            <NavItem key={item.to} item={item} onClose={onClose} />
           ))}
         </div>
 
@@ -271,6 +291,7 @@ export function Sidebar() {
           <div className="space-y-0.5">
             <SectionLabel label="Admin" />
             <NavItem
+              onClose={onClose}
               item={{
                 to: '/admin',
                 label: 'Admin Panel',

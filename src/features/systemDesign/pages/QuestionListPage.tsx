@@ -81,7 +81,7 @@ export function QuestionListPage() {
       className="h-full overflow-y-auto"
       style={{ background: isDark ? '#060612' : '#f1f5f9' }}
     >
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -137,7 +137,7 @@ export function QuestionListPage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search questions..."
-            className={`px-3 py-2 text-sm rounded-xl border outline-none transition-colors w-56 ${
+            className={`px-3 py-2 text-sm rounded-xl border outline-none transition-colors w-full sm:w-56 ${
               isDark
                 ? 'bg-gray-800/60 border-gray-700/50 text-gray-200 placeholder-gray-600 focus:border-indigo-500/50'
                 : 'bg-gray-50 border-gray-200 text-gray-800 placeholder-gray-400 focus:border-indigo-400'

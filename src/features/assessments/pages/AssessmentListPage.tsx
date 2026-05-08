@@ -22,28 +22,33 @@ export const AssessmentListPage: React.FC = () => {
 
   return (
     <AssessmentPageShell>
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 sm:gap-8 mb-12 sm:mb-16">
         <div className="max-w-2xl">
           <span className="text-xs font-bold text-blue-500 uppercase tracking-[0.2em] mb-4 block">
             Knowledge Validation
           </span>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight">
             Assessments <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">& Mock Interviews</span>
           </h1>
-          <p className="mt-4 text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+          <p className="mt-4 text-base text-gray-600 dark:text-gray-400 leading-relaxed">
             Choose a category to start a timed technical assessment. Our proctored engine simulates real interview environments to help you prepare effectively.
           </p>
         </div>
 
-        <div className="relative w-full lg:w-96 group">
+        <div className="relative w-full lg:w-80 group">
           <input
             type="text"
             placeholder="Search categories..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all duration-300 shadow-sm group-hover:border-gray-200 dark:group-hover:border-gray-700"
+            className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none transition-all duration-300"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1.5px solid rgba(255,255,255,0.08)',
+              color: '#e5e7eb',
+            }}
           />
-          <svg className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
@@ -86,7 +91,7 @@ export const AssessmentListPage: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {filteredCategories?.map((category) => (
             <CategoryCard key={category.id} category={category} />
           ))}

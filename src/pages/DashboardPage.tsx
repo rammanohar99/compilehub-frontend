@@ -664,11 +664,11 @@ export function DashboardPage() {
       className="h-full overflow-y-auto"
       style={{ background: isDark ? '#060612' : '#f1f5f9' }}
     >
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
-            <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            <h1 className={`text-xl sm:text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
               {greeting}, {user?.name?.split(' ')[0]}
             </h1>
             <p className={`text-sm mt-0.5 ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>{today}</p>
@@ -687,7 +687,7 @@ export function DashboardPage() {
         </div>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
           <StatCard
             label="Problems Solved"
             value={stats?.problemsSolved ?? '—'}
@@ -755,9 +755,9 @@ export function DashboardPage() {
         </div>
 
         {/* Main grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
           {/* Left: 2 cols */}
-          <div className="lg:col-span-2 space-y-5">
+          <div className="xl:col-span-2 space-y-5">
             {user?.id && <ActivityHeatmap userId={user.id} />}
             <AssessmentDashboardWidgets />
             {user?.id && <LearningPath userId={user.id} />}

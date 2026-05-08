@@ -78,16 +78,29 @@ export function QuestionDetailPage() {
   }
 
   return (
-    <div className="flex h-full overflow-hidden bg-gray-50 dark:bg-gray-950">
-      <LeftPanel question={question} isAdmin={user?.role === 'ADMIN'} />
-      <div className="w-px bg-gray-200 dark:bg-gray-800 shrink-0" />
-      <RightPanel
-        answer={answer}
-        onChange={setAnswer}
-        onSubmit={handleSubmit}
-        isSubmitting={isSubmitting}
-        questionId={question.id}
-      />
+    <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-gray-50 dark:bg-gray-950">
+      <div className="lg:hidden flex-1 overflow-y-auto">
+        <LeftPanel question={question} isAdmin={user?.role === 'ADMIN'} />
+        <div className="border-t border-gray-200 dark:border-gray-800" />
+        <RightPanel
+          answer={answer}
+          onChange={setAnswer}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          questionId={question.id}
+        />
+      </div>
+      <div className="hidden lg:flex flex-1 overflow-hidden">
+        <LeftPanel question={question} isAdmin={user?.role === 'ADMIN'} />
+        <div className="w-px bg-gray-200 dark:bg-gray-800 shrink-0" />
+        <RightPanel
+          answer={answer}
+          onChange={setAnswer}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          questionId={question.id}
+        />
+      </div>
     </div>
   );
 }
@@ -107,7 +120,7 @@ function LeftPanel({ question, isAdmin }: LeftPanelProps) {
   const [activeTab, setActiveTab] = useState<LeftTab>('description');
 
   return (
-    <div className="w-1/2 flex flex-col overflow-hidden">
+    <div className="w-full lg:w-1/2 flex flex-col overflow-hidden">
       <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-800 shrink-0">
         <Link
           to="/system-design"
@@ -514,7 +527,7 @@ function RightPanel({ answer, onChange, onSubmit, isSubmitting, questionId }: Ri
   const isValid = answer.trim().length >= MIN_ANSWER_LENGTH;
 
   return (
-    <div className="w-1/2 flex flex-col bg-white dark:bg-gray-950 overflow-hidden">
+    <div className="w-full lg:w-1/2 flex flex-col bg-white dark:bg-gray-950 overflow-hidden">
       <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 px-4 shrink-0">
         <div className="flex gap-0">
           {RIGHT_TABS.map((tab) => (

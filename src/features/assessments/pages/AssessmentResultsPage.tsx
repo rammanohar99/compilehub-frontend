@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { assessmentApi } from '../api/assessments';
@@ -17,6 +17,20 @@ export const AssessmentResultsPage: React.FC = () => {
     queryFn: () => assessmentApi.getAttempt(id!),
     enabled: !!id,
   });
+
+  // Replace raw ID in URL with a readable slug once data is available
+  useEffect(() => {
+    const title = attempt?.assessment?.title;
+    if (!title || !id) return;
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    const cleanUrl = `/assessments/results/${slug}`;
+    if (window.location.pathname !== cleanUrl) {
+      window.history.replaceState(null, '', cleanUrl);
+    }
+  }, [attempt?.assessment?.title, id]);
 
   if (isLoading) return <PageLoader />;
 
@@ -87,13 +101,13 @@ export const AssessmentResultsPage: React.FC = () => {
     <AssessmentPageShell>
       <div className="max-w-[1400px] mx-auto pb-32">
         <header className="mb-16">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-500/10 rounded-full text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-[0.2em]">
                  Verification Complete
               </div>
-              <h1 className="text-5xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
-                Performance <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500 text-6xl">Report.</span>
+              <h1 className="text-3xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
+                Performance <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500 text-4xl sm:text-6xl">Report.</span>
               </h1>
               <div className="flex flex-wrap items-center gap-4 text-gray-400 font-bold text-sm">
                 <span>{attempt.assessment.title}</span>
@@ -115,7 +129,7 @@ export const AssessmentResultsPage: React.FC = () => {
         </header>
 
         {/* Top Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mb-12 sm:mb-16">
           <ResultStatCard 
             label="Verified Score" 
             value={`${score}/${totalPoints}`}
@@ -142,9 +156,15 @@ export const AssessmentResultsPage: React.FC = () => {
         <div className="flex flex-col lg:flex-row gap-12 items-start">
           {/* Side Analysis */}
           <div className="w-full lg:w-96 space-y-10 lg:sticky lg:top-8">
-            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 p-10 shadow-xl shadow-blue-500/[0.02]">
-              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-10 tracking-tight">Syllabus Mastery</h3>
-              <div className="space-y-10">
+            <div
+              className="rounded-2xl border p-6 shadow-sm"
+              style={{
+                background: 'rgba(255,255,255,0.02)',
+                borderColor: 'rgba(255,255,255,0.06)',
+              }}
+            >
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6 tracking-tight">Syllabus Mastery</h3>
+              <div className="space-y-6">
                 {Object.entries(topicStats).map(([topic, stats]) => (
                   <BreakdownBar 
                     key={topic} 
@@ -157,8 +177,14 @@ export const AssessmentResultsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 p-10 shadow-xl shadow-blue-500/[0.02]">
-              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-10 tracking-tight">Depth Analysis</h3>
+            <div
+              className="rounded-2xl border p-6 shadow-sm"
+              style={{
+                background: 'rgba(255,255,255,0.02)',
+                borderColor: 'rgba(255,255,255,0.06)',
+              }}
+            >
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6 tracking-tight">Depth Analysis</h3>
               <div className="space-y-10">
                 {Object.entries(difficultyStats)
                   .filter(([_, stats]) => stats.total > 0)
@@ -177,10 +203,10 @@ export const AssessmentResultsPage: React.FC = () => {
 
           {/* Main Review List */}
           <div className="flex-1 w-full space-y-10">
-            <div className="flex items-center justify-between px-2">
-              <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-2">
+              <h3 className="text-base sm:text-xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
                 Knowledge Gaps & Feedback
-                <span className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-black text-gray-400">
+                <span className="w-7 h-7 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-black text-gray-400">
                   {questions.length}
                 </span>
               </h3>

@@ -75,13 +75,13 @@ export function ProfilePage() {
 
   return (
     <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 sm:space-y-6">
         {/* Profile card */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-          <div className="flex items-start gap-5">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 sm:p-6 shadow-sm">
+          <div className="flex items-start gap-4">
             {/* Avatar */}
-            <div className="w-16 h-16 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0">
-              <span className="text-2xl font-bold text-white">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0">
+              <span className="text-xl sm:text-2xl font-bold text-white">
                 {user?.name.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -101,7 +101,7 @@ export function ProfilePage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3 sm:gap-4">
           <StatCard label="Total Submissions" value={String(total)} />
           <StatCard label="Accepted" value={String(passedCount)} accent="green" />
           <StatCard label="Acceptance Rate" value={`${passRate}%`} accent="blue" />

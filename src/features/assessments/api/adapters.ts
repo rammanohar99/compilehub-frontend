@@ -47,8 +47,9 @@ export const mapBackendAttemptToFrontend = (data: any): AssessmentAttempt => {
     [];
   const questions = rawQuestions
     .map((entry: any) => {
-      // Supports relation shape: { sequence, question: {...} } from include trees
-      const q = entry?.question ?? entry;
+      // /result response wraps questions: { sequence, question: {...} }
+      // /generate response has flat objects where "question" is a string field
+      const q = (entry?.question && typeof entry.question === 'object') ? entry.question : entry;
       return mapBackendQuestion(q);
     })
     .filter((q: AssessmentQuestion) => !!q.id && !!q.text);
@@ -108,13 +109,28 @@ export const mapBackendAttemptToFrontend = (data: any): AssessmentAttempt => {
 
 /**
  * Specialized mapper for the /generate response which is NOT an attempt yet.
- * Returns the assessmentId and basic metadata needed to start the attempt.
+ * Returns the assessmentId, basic metadata, and the questions for use in the engine.
  */
 export const mapBackendGenerationResponse = (data: any) => {
   const assessment = data.assessment || {};
+  const rawQuestions =
+    assessment.questions ||
+    data.questions ||
+    [];
+  const questions = rawQuestions
+    .map((entry: any) => {
+      // In the /result response, questions are wrapped: { sequence, question: {...} }
+      // In the /generate response, questions are flat objects with a "question" string field
+      const q = (entry?.question && typeof entry.question === 'object') ? entry.question : entry;
+      return mapBackendQuestion(q);
+    })
+    .filter((q: AssessmentQuestion) => !!q.id && !!q.text);
+
   return {
     assessmentId: assessment.id,
-    questionCount: data.metadata?.questionCount || 0,
-    estimatedDuration: data.metadata?.estimatedDurationSecs || 0
+    assessmentTitle: assessment.title || data.metadata?.title || 'Technical Assessment',
+    questionCount: data.metadata?.questionCount || questions.length || 0,
+    estimatedDuration: data.metadata?.estimatedDurationSecs || assessment.estimatedDurationSecs || 0,
+    questions,
   };
 };

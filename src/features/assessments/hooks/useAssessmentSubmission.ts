@@ -59,7 +59,6 @@ export const useAssessmentSubmission = () => {
       return assessmentApi.submitAttempt(activeAttempt.id);
     },
     onSuccess: (result) => {
-      // Show XP feedback matching code submission style
       if (result?.xpAwarded && result.xpAwarded > 0) {
         toast.success(`+${result.xpAwarded} XP earned! Total: ${result.newTotal?.toLocaleString()} XP`, {
           icon: '⚡',
@@ -69,14 +68,12 @@ export const useAssessmentSubmission = () => {
         toast.success('Assessment submitted successfully!');
       }
       
-      // 3. Cleanup
       if (activeAttempt) {
         assessmentStorage.clearDraft(activeAttempt.id);
       }
       const attemptId = activeAttempt?.id;
       clearAttempt();
 
-      // 4. Redirect
       navigate(`/assessments/results/${attemptId}`);
     },
     onError: (_error) => {

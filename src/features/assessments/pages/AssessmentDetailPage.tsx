@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -32,6 +32,7 @@ export const AssessmentDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const queryClient = useQueryClient();
   const startAttempt = useAssessmentStore((s) => s.startAttempt);
   const clearAttempt = useAssessmentStore((s) => s.clearAttempt);
 
@@ -63,11 +64,18 @@ export const AssessmentDetailPage: React.FC = () => {
   const { mutate: generate, isPending } = useMutation({
     mutationFn: async (request: CreateAssessmentRequest) => {
       const generation = await assessmentApi.generateAssessment(request);
-      return assessmentApi.startAttempt(generation.assessmentId);
+      const attempt = await assessmentApi.startAttempt(generation.assessmentId);
+      if (generation.questions.length > 0 && attempt.assessment.questions.length === 0) {
+        attempt.assessment.questions = generation.questions;
+        attempt.assessment.title = attempt.assessment.title || generation.assessmentTitle;
+      }
+      return attempt;
     },
     onSuccess: (attempt) => {
       clearAttempt();
       startAttempt(attempt);
+      // Seed the query cache so the engine page never re-fetches this attempt
+      queryClient.setQueryData(['assessment-attempt', attempt.id], attempt);
       navigate(`/assessments/attempt/${attempt.id}`);
     },
     onError: () => toast.error('Failed to generate assessment. Please try again.'),

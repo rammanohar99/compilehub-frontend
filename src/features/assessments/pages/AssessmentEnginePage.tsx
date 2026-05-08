@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { assessmentApi } from '../api/assessments';
@@ -8,7 +8,6 @@ import { AttemptFooter } from '../components/engine/AttemptFooter';
 import { QuestionPalette } from '../components/engine/QuestionPalette';
 import { QuestionRenderer } from '../components/engine/QuestionRenderer';
 import { PageLoader } from '../../../components/LoadingSpinner';
-
 import { useAutosave } from '../hooks/useAutosave';
 import { useAttemptRecovery } from '../hooks/useAttemptRecovery';
 import { RecoveryModal } from '../components/engine/RecoveryModal';
@@ -18,124 +17,74 @@ export const AssessmentEnginePage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [loadErrorCode, setLoadErrorCode] = useState<string | null>(null);
-  const { 
-    activeAttempt, 
-    startAttempt, 
-    currentQuestionIndex, 
-    localAnswers, 
-    setAnswer 
+
+  const {
+    activeAttempt,
+    startAttempt,
+    currentQuestionIndex,
+    localAnswers,
+    setAnswer,
   } = useAssessmentStore();
 
   const routeAttemptId = id ?? '';
-  const isRouteAttemptActive = !!routeAttemptId && activeAttempt?.id === routeAttemptId;
-  const hasQuestions = !!activeAttempt?.assessment?.questions?.length;
-  const shouldFetchAttempt =
-    !!routeAttemptId && (!isRouteAttemptActive || !hasQuestions);
 
-  useAutosave(routeAttemptId);
-  const { showRecoveryModal, restoreDraft, discardDraft, draftUpdatedAt } = useAttemptRecovery();
+  // Active if store has it OR cache has it (covers the brief gap on first render)
+  const cachedAttempt = queryClient.getQueryData<any>(['assessment-attempt', routeAttemptId]);
+  const isActive = !!routeAttemptId && (activeAttempt?.id === routeAttemptId || !!cachedAttempt);
+  const hasQuestions = (activeAttempt?.assessment?.questions?.length ?? 0) > 0 ||
+    (cachedAttempt?.assessment?.questions?.length ?? 0) > 0;
 
-  useEffect(() => {
-    if (!routeAttemptId) return;
-
-    // Prevent stale/failed attempt queries from retrying in the background
-    // when we navigate to a new attempt id.
-    void queryClient.cancelQueries({
-      queryKey: ['assessment-attempt'],
-      exact: false,
-    });
-    queryClient.removeQueries({
-      queryKey: ['assessment-attempt'],
-      exact: false,
-      predicate: (query) => query.queryKey[1] !== routeAttemptId,
-    });
-  }, [queryClient, routeAttemptId]);
-
-  const { data: attempt, isLoading, isError } = useQuery({
+  // Only hit the network if the store doesn't have this attempt
+  const { data: fetched, isLoading, isError } = useQuery({
     queryKey: ['assessment-attempt', routeAttemptId],
     queryFn: () => assessmentApi.getAttempt(routeAttemptId),
-    enabled: shouldFetchAttempt,
+    enabled: !!routeAttemptId && !isActive,
     retry: false,
     retryOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
+    staleTime: Infinity,
   });
 
+  // When fetched from network, load into store
   useEffect(() => {
-    if (!isError || !routeAttemptId) return;
-    const state = queryClient.getQueryState(['assessment-attempt', routeAttemptId]) as any;
-    const status = state?.error?.response?.status;
-    const url = state?.error?.config?.url;
-    const code = status ? String(status) : 'unknown';
-    setLoadErrorCode(code);
-    console.error('[AssessmentEnginePage] load attempt failed', {
-      routeAttemptId,
-      status,
-      url,
-      error: state?.error,
-    });
-  }, [isError, queryClient, routeAttemptId]);
-
-  useEffect(() => {
-    if (attempt) {
-      startAttempt(attempt);
+    if (fetched && activeAttempt?.id !== routeAttemptId) {
+      startAttempt(fetched);
     }
-  }, [attempt, startAttempt]);
+  }, [fetched, activeAttempt?.id, routeAttemptId, startAttempt]);
 
-  // Replace the ugly ID-based URL with a readable slug once we have the title
+  // If cache has the attempt but store doesn't yet, hydrate store from cache
   useEffect(() => {
-    const title = activeAttempt?.assessment?.title;
-    if (!title || !routeAttemptId) return;
-    const slug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-    const cleanUrl = `/assessments/attempt/${slug}`;
-    if (window.location.pathname !== cleanUrl) {
-      window.history.replaceState(null, '', cleanUrl);
+    if (cachedAttempt && activeAttempt?.id !== routeAttemptId) {
+      startAttempt(cachedAttempt);
     }
-  }, [activeAttempt?.assessment?.title, routeAttemptId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // Redirect to results if attempt is already completed
   useEffect(() => {
-    if (!activeAttempt || !routeAttemptId) return;
-    if (activeAttempt.id === routeAttemptId && activeAttempt.status === 'COMPLETED') {
+    if (activeAttempt?.id === routeAttemptId && activeAttempt.status === 'COMPLETED') {
       navigate(`/assessments/results/${routeAttemptId}`, { replace: true });
     }
   }, [activeAttempt, routeAttemptId, navigate]);
 
-  const currentQuestion = useMemo(() => {
-    if (!isRouteAttemptActive || !activeAttempt) return null;
-    return activeAttempt.assessment.questions[currentQuestionIndex];
-  }, [isRouteAttemptActive, activeAttempt, currentQuestionIndex]);
+  useAutosave(routeAttemptId);
+  const { showRecoveryModal, restoreDraft, discardDraft, draftUpdatedAt } = useAttemptRecovery();
 
+  const currentQuestion = useMemo(() => {
+    if (!isActive || !activeAttempt) return null;
+    return activeAttempt.assessment.questions[currentQuestionIndex] ?? null;
+  }, [isActive, activeAttempt, currentQuestionIndex]);
+
+  // Still loading from network
   if (isLoading) return <PageLoader />;
-  
-  if (isError || (!isLoading && (!isRouteAttemptActive || !hasQuestions))) {
+
+  // Network fetch failed
+  if (isError) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-50 dark:bg-gray-950 p-6 text-center">
         <h2 className="text-2xl font-bold text-red-500 mb-2">Failed to load assessment</h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-2">The assessment link might be expired or invalid.</p>
-        {loadErrorCode && (
-          <p className="text-xs text-gray-500 dark:text-gray-500 mb-6">Error code: {loadErrorCode}</p>
-        )}
-        <button 
-          onClick={() => navigate('/assessments')}
-          className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold"
-        >
-          Return to Dashboard
-        </button>
-      </div>
-    );
-  }
-
-  if (!activeAttempt || !currentQuestion) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen bg-gray-50 dark:bg-gray-950 p-6 text-center">
-        <h2 className="text-2xl font-bold text-red-500 mb-2">Assessment data is incomplete</h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          We could not load questions for this attempt. Please restart this attempt.
-        </p>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">The assessment link might be expired or invalid.</p>
         <button
           onClick={() => navigate('/assessments')}
           className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold"
@@ -146,21 +95,22 @@ export const AssessmentEnginePage: React.FC = () => {
     );
   }
 
+  // Store not yet hydrated — wait (covers the brief gap between navigate() and store update)
+  if (!isActive || !hasQuestions || !currentQuestion) return <PageLoader />;
+
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
       <AttemptHeader />
-      
+
       <div className="flex-1 flex overflow-hidden">
-        {/* Main Question Area */}
         <main className="flex-1 overflow-y-auto px-4 py-12 pb-40 sm:px-8 sm:pb-44">
-          <QuestionRenderer 
+          <QuestionRenderer
             question={currentQuestion}
             answer={localAnswers[currentQuestion.id]}
             onChange={(val: AssessmentAnswerValue) => setAnswer(currentQuestion.id, val)}
           />
         </main>
 
-        {/* Sidebar Palette - Hidden on mobile */}
         <div className="hidden lg:flex pb-36">
           <QuestionPalette />
         </div>
@@ -168,7 +118,7 @@ export const AssessmentEnginePage: React.FC = () => {
 
       <AttemptFooter />
 
-      <RecoveryModal 
+      <RecoveryModal
         isOpen={showRecoveryModal}
         onRestore={restoreDraft}
         onDiscard={discardDraft}

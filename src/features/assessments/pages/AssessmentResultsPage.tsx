@@ -16,6 +16,9 @@ export const AssessmentResultsPage: React.FC = () => {
     queryKey: ['assessment-attempt-results', id],
     queryFn: () => assessmentApi.getAttempt(id!),
     enabled: !!id,
+    // Retry once in case the backend is still processing the submission
+    retry: 1,
+    retryDelay: 1500,
   });
 
   // Replace raw ID in URL with a readable slug once data is available
@@ -34,7 +37,7 @@ export const AssessmentResultsPage: React.FC = () => {
 
   if (isLoading) return <PageLoader />;
 
-  if (isError || !attempt || attempt.status !== 'COMPLETED') {
+  if (isError || !attempt) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-12">
         <div className="w-24 h-24 bg-red-50 dark:bg-red-500/10 rounded-[2.5rem] flex items-center justify-center mb-10 text-red-500 shadow-inner">
@@ -42,9 +45,9 @@ export const AssessmentResultsPage: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
            </svg>
         </div>
-        <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">Result Access Denied</h2>
+        <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">Results Unavailable</h2>
         <p className="text-gray-500 dark:text-gray-400 mb-10 max-w-sm mx-auto font-medium leading-relaxed">
-          The requested assessment report is either unavailable or the attempt session is still active.
+          We couldn't load the results for this assessment. It may have been deleted or the link is invalid.
         </p>
         <button 
           onClick={() => navigate('/assessments')}

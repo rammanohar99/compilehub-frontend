@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /profile
+Disallow: /submissions/
+Disallow: /system-design/submissions/
+Disallow: /assessments/attempt/
+Disallow: /assessments/results/
+
+Sitemap: https://compilerhub.ramdev.tech/sitemap.xml
